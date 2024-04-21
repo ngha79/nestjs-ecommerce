@@ -1,0 +1,27 @@
+version: "3"
+services:
+  server:
+    build:
+      context: ../ecommerce
+      dockerfile: Dockerfile
+    environment:
+      DB_USERNAME: admin
+      DB_PASSWORD: matkhau1
+      DB_HOST: mysql
+      DB_DATABASE: ecommerce
+    volumes:
+      - /usr/src/app/node_modules
+    ports:
+      - 3001:3001
+  mysql:
+    image: mysql:latest
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: matkhau1
+      MYSQL_DATABASE: ecommerce
+    volumes:
+      - ./docker/mysql/data:/var/lib/mysql
+      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+      - ./docker/mysql/initdata:/docker-entrypoint-initdb.d
+    ports:
+      - 3306:3306
