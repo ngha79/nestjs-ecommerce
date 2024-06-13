@@ -380,7 +380,7 @@ export class AuthService {
                           </p>
                           <div class="align-center">
                             <a
-                              href="http://localhost:3000/verify/${newUser.id}"
+                              href="${process.env.URL_CLIENT}/verify/${newUser.id}"
                               target="_blank"
                               class="btn-primary btn"
                               >Xác nhận địa chỉ Email của tôi</a
@@ -830,7 +830,7 @@ export class AuthService {
                   </p>
                   <div class="align-center">
                     <a
-                      href="http://localhost:3000/verify/${newUser.id}"
+                      href="${process.env.URL_CLIENT_MANAGER}/verify/${newUser.id}"
                       target="_blank"
                       class="btn-primary btn"
                       >Xác nhận địa chỉ Email của tôi</a
