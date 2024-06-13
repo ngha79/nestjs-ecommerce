@@ -1027,11 +1027,11 @@ export class AuthService {
   private async generateToken(payload: PayloadToken) {
     const accessToken = await this.jwtService.signAsync(payload, {
       secret: this.configService.get<string>('ACCESSTOKEN_KEY'),
-      expiresIn: this.configService.get<string>('EXPIRE_ACCESSTOKEN'),
+      expiresIn: '1d',
     });
     const refreshToken = await this.jwtService.signAsync(payload, {
       secret: this.configService.get<string>('REFRESHTOKEN_KEY'),
-      expiresIn: this.configService.get<string>('EXPIRE_REFRESHTOKEN'),
+      expiresIn: '7d',
     });
 
     return { accessToken, refreshToken };
