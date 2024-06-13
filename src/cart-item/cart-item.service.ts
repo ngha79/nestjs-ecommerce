@@ -35,7 +35,7 @@ export class CartItemService implements ICartItemService {
   }
 
   async updateCartItems(
-    userId: string,
+    id: string,
     updateCartItemDto: UpdateCartItemDto,
   ): Promise<UpdateResult | number> {
     const { total_product, productId } = updateCartItemDto;
@@ -54,8 +54,8 @@ export class CartItemService implements ICartItemService {
       throw new BadRequestException(
         `Số lượng sản phẩm chỉ còn ${stock}, vui lòng chọn số lượng phù hợp!`,
       );
-    let cart = await this.cartService.findOneByUser(userId);
-    if (!cart) cart = await this.cartService.create(userId, { cartItems: [] });
+    let cart = await this.cartService.findOneByUser(id);
+    if (!cart) cart = await this.cartService.create(id, { cartItems: [] });
     return await this.update(cart?.id, {
       ...updateCartItemDto,
     });

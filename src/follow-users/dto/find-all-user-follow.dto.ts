@@ -1,6 +1,6 @@
 export class FindAllUserFollow {
   page: number;
   limit: number;
-  userId: string;
+  id: string;
   search: string;
 }

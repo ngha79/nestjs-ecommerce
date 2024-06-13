@@ -1,4 +1,9 @@
 export class AddProductToWishListDto {
   productId: string;
-  userId: string;
+  id: string;
+}
+
+export class AddProductsToWishListDto {
+  productIds: string[];
+  id: string;
 }

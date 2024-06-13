@@ -35,6 +35,7 @@ import { UserService } from '../services/user.service';
 import { IChangePassword } from '../dto/change-password';
 import { AdminGuard } from 'src/guards/admin.guard';
 import { ICreateUser } from '../dto/create-user.dto';
+import { ShopGuard } from 'src/guards/shop.guard';
 
 @ApiTags('Users')
 @Controller('users')
@@ -89,8 +90,8 @@ export class UserController {
 
   @UseGuards(AuthGuard)
   @Get('me')
-  getProfileUser(@UserRequest() payload: PayloadToken): Promise<User> {
-    return this.userService.getProfileUser(payload);
+  getProfileUser(@UserRequest() user: PayloadToken): Promise<User> {
+    return this.userService.getProfileUser(user);
   }
 
   @UseGuards(AuthGuard)
@@ -111,7 +112,7 @@ export class UserController {
       fileBackground?: Express.Multer.File[];
     },
   ): Promise<User> {
-    const user = await this.userService.findUserById(payload.userId);
+    const user = await this.userService.findUserById(payload.id);
     if (files?.fileAvatar?.length) {
       const avatar = await this.cloudinaryService.uploadFile(
         files.fileAvatar[0],
@@ -129,7 +130,7 @@ export class UserController {
       );
       updateUser.avatar = background.secure_url;
     }
-    return this.userService.updateProfileUser(payload.userId, updateUser);
+    return this.userService.updateProfileUser(payload.id, updateUser);
   }
 
   @UseGuards(AuthGuard)
@@ -138,11 +139,11 @@ export class UserController {
     @UserRequest() payload: PayloadToken,
     @Body() changePassword: IChangePassword,
   ): Promise<any> {
-    return this.userService.changePassword(payload.userId, changePassword);
+    return this.userService.changePassword(payload.id, changePassword);
   }
 
-  @UseGuards(AdminGuard)
-  @Put(':userId')
+  @UseGuards(ShopGuard)
+  @Put(':id')
   @UseInterceptors(
     FileFieldsInterceptor([
       { name: 'fileAvatar', maxCount: 1 },
@@ -151,14 +152,14 @@ export class UserController {
   )
   async updateProfileUserByAdmin(
     @Body() updateUser: UpdateUser,
-    @Param('userId') userId: string,
+    @Param('id') id: string,
     @UploadedFiles()
     files: {
       fileAvatar?: Express.Multer.File[];
       fileBackground?: Express.Multer.File[];
     },
   ): Promise<User> {
-    const user = await this.userService.findUserById(userId);
+    const user = await this.userService.findUserById(id);
     if (files?.fileAvatar?.length) {
       const avatar = await this.cloudinaryService.uploadFile(
         files.fileAvatar[0],
@@ -176,11 +177,10 @@ export class UserController {
       );
       updateUser.background = background.secure_url;
     }
-    return this.userService.updateProfileUser(userId, updateUser);
+    return this.userService.updateProfileUser(id, updateUser);
   }
 
   @UseGuards(AuthGuard)
-  @ApiBearerAuth()
   @Put('update-avatar')
   @UseInterceptors(FileInterceptor('file'))
   async updateAvatarUser(
@@ -196,12 +196,12 @@ export class UserController {
     )
     file: Express.Multer.File,
   ) {
-    const { userId } = payload;
+    const { id } = payload;
     const { url } = await this.cloudinaryService.uploadFile(file, {
-      folderName: userId,
-      fileName: userId,
+      folderName: id,
+      fileName: id,
     });
-    return this.userService.updateAvatarUser(userId, { avatar: url });
+    return this.userService.updateAvatarUser(id, { avatar: url });
   }
 
   @UseGuards(AuthGuard)
@@ -219,29 +219,29 @@ export class UserController {
     )
     file: Express.Multer.File,
   ) {
-    const { userId } = payload;
+    const { id } = payload;
     const { url } = await this.cloudinaryService.uploadFile(file, {
-      folderName: userId,
-      fileName: userId,
+      folderName: id,
+      fileName: id,
     });
-    return this.userService.updateAvatarUser(userId, { background: url });
+    return this.userService.updateAvatarUser(id, { background: url });
   }
 
-  @Get(':userId')
-  findUserById(@Param('userId') userId: string): Promise<User> {
-    return this.userService.findUserById(userId);
+  @Get(':id')
+  findUserById(@Param('id') id: string): Promise<User> {
+    return this.userService.findUserById(id);
   }
 
-  @Get('/profile/:userId')
-  findProfileUser(@Param('userId') userId: string): Promise<any> {
-    return this.userService.findProfileUser(userId);
+  @Get('/profile/:id')
+  findProfileUser(@Param('id') id: string): Promise<any> {
+    return this.userService.findProfileUser(id);
   }
 
   @UseGuards(AdminGuard)
   @ApiBearerAuth()
-  @Delete(':userId')
-  deleteUserById(@Param('userId') userId: string): Promise<DeleteResult> {
-    return this.userService.deleteUserById(userId);
+  @Delete(':id')
+  deleteUserById(@Param('id') id: string): Promise<DeleteResult> {
+    return this.userService.deleteUserById(id);
   }
 
   @Get()

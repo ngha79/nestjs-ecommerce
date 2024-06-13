@@ -40,7 +40,6 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 import { Shop } from 'src/entities/shop.entity';
 import { InventoriesService } from 'src/inventories/inventories.service';
-import { ProductImage } from 'src/entities/productImage.entity';
 import { LikeProduct } from 'src/entities/like-product.entity';
 
 @Injectable()
@@ -60,7 +59,6 @@ export class ProductService implements IProductService {
     private readonly inventoriesService: InventoriesService,
     @Inject(Services.DISCOUNT)
     private readonly discountService: DiscountsService,
-
     private dataSource: DataSource,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
@@ -164,6 +162,17 @@ export class ProductService implements IProductService {
     });
   }
 
+  async updateSoldProduct(
+    quantity: number,
+    productId: string,
+  ): Promise<UpdateResult> {
+    const product = await this.productRepository.findOneBy({ id: productId });
+    return await this.productRepository.update(
+      { id: product.id },
+      { sold: product.sold + quantity },
+    );
+  }
+
   async updateProductById(
     productId: string,
     updateProduct: IUpdateProduct,
@@ -216,31 +225,8 @@ export class ProductService implements IProductService {
     return this.productAttributeRepository.save({ ...updateAttributeProduct });
   }
 
-  async deleteProductById(productId: string, userId: string): Promise<boolean> {
-    const product = await this.getProductById(productId);
-    if (!product) throw new NotFoundException('Product not exist!');
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
-    try {
-      await queryRunner.manager.delete(Inventory, {
-        product: { id: productId },
-      });
-      await queryRunner.manager.delete(ProductAttribute, {
-        product: { id: productId },
-      });
-      await queryRunner.manager.delete(ProductImage, {
-        product: { id: productId },
-      });
-      await queryRunner.manager.delete(Product, { id: productId });
-      await queryRunner.commitTransaction();
-    } catch (err) {
-      await queryRunner.rollbackTransaction();
-      return false;
-    } finally {
-      await queryRunner.release();
-    }
-    return true;
+  async deleteProductById(productId: string): Promise<any> {
+    return await this.productRepository.delete({ id: productId });
   }
 
   async deleteProductAttribute(productId: number): Promise<boolean> {
@@ -285,8 +271,8 @@ export class ProductService implements IProductService {
       ids,
     } = productSearch;
     const take = parseInt(limit);
-    const takePage = parseInt(page) - 1;
-    const skip = take * takePage;
+    const takePage = parseInt(page);
+    const skip = take * (takePage - 1);
     const orderBy = {};
     if (searchBy === 'sales') {
       orderBy['sold'] = 'DESC';
@@ -297,14 +283,15 @@ export class ProductService implements IProductService {
     if (searchBy === 'price') {
       orderBy['price'] = order;
     }
+    const nameSearch = slugify(search, { lower: true });
     const listIds = ids?.split(',') || [];
     const [res, total] = await this.productRepository.findAndCount({
       where: [
         {
-          slug: Like('%' + search + '%'),
+          slug: Like('%' + nameSearch + '%'),
           isPublish: publish ? false : true,
           shop: { id: shopId },
-          brand: BrandProduct[brand?.toUpperCase()],
+          brand,
           id: listIds?.length > 0 ? Not(In([listIds])) : undefined,
         },
       ],
@@ -313,7 +300,7 @@ export class ProductService implements IProductService {
       skip: skip,
       order: orderBy,
     });
-    const lastPage = Math.floor(total / take);
+    const lastPage = Math.ceil(total / take);
     const nextPage = takePage + 1 > lastPage ? null : takePage + 1;
     const prevPage = takePage - 1 < 1 ? null : takePage - 1;
     return {
@@ -400,7 +387,7 @@ export class ProductService implements IProductService {
     );
   }
 
-  async checkoutReview({ cartId, userId, shop_order_ids = [] }: ICheckOut) {
+  async checkoutReview({ cartId, id, shop_order_ids = [] }: ICheckOut) {
     const foundCart = await this.cartService.findOne(cartId);
     if (!foundCart) {
       throw new BadRequestException('Cart does not exist!');
@@ -448,26 +435,23 @@ export class ProductService implements IProductService {
           product_new,
         } = await this.discountService.applyDiscountToProduct({
           codeId: shop_discounts,
-          userId,
+          id,
           shopId,
           products: checkProductServer,
         });
-
-        checkout_order.totalDiscount +=
+        checkout_order.totalCheckout +=
           total_price - total_price_apply_discount;
         if (total_price_apply_discount > 0) {
           itemCheckout.priceApplyDiscount =
             checkoutPrice - total_price_apply_discount;
           itemCheckout.item_products = product_new;
         }
-        checkout_order.totalCheckout += total_price_apply_discount;
+        checkout_order.totalDiscount += total_price_apply_discount;
       } else {
         checkout_order.totalCheckout += itemCheckout.priceRaw;
       }
-
       shop_order_ids_new.push(itemCheckout);
     }
-
     return {
       shop_order_ids,
       shop_order_ids_new,
@@ -476,24 +460,21 @@ export class ProductService implements IProductService {
   }
 
   async likeProduct(
-    userId: string,
+    id: string,
     productId: string,
     shopId: string,
   ): Promise<LikeProduct> {
     return await this.likeProductRepo.save({
       product: { id: productId },
-      user: { id: userId },
+      user: { id: id },
       shop: { id: shopId },
     });
   }
 
-  async unlikeProduct(
-    userId: string,
-    productId: string,
-  ): Promise<DeleteResult> {
+  async unlikeProduct(id: string, productId: string): Promise<DeleteResult> {
     return await this.likeProductRepo.delete({
       product: { id: productId },
-      user: { id: userId },
+      user: { id: id },
     });
   }
 
@@ -505,9 +486,9 @@ export class ProductService implements IProductService {
     return res;
   }
 
-  async checkLikeProduct(userId: string, productId: string): Promise<any> {
+  async checkLikeProduct(id: string, productId: string): Promise<any> {
     const isLikeProduct = await this.likeProductRepo.findOne({
-      where: { product: { id: productId }, user: { id: userId } },
+      where: { product: { id: productId }, user: { id: id } },
     });
     const totalLike = await this.getLikeProduct(productId);
     return { isLike: isLikeProduct, totalLike };

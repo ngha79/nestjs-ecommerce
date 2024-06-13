@@ -13,5 +13,5 @@ export interface UpdateShopDto {
 
   addressUpdate?: string;
 
-  address?: AddressShop[];
+  address?: AddressShop;
 }

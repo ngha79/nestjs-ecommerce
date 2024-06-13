@@ -25,29 +25,29 @@ export class AddressService {
   ) {}
 
   async insertAddressForAccount(
-    userId: string,
+    id: string,
     infoAddress: InfoAddressUser,
   ): Promise<Address> {
     if (infoAddress.isAddressDefault) {
       await this.addressRepository.update(
-        { user: { id: userId }, isAddressDefault: true },
+        { user: { id: id }, isAddressDefault: true },
         { isAddressDefault: false },
       );
     }
     return await this.addressRepository.save({
       ...infoAddress,
-      user: { id: userId },
+      user: { id: id },
     });
   }
 
   async updateAddressForAccount(
-    userId: string,
+    id: string,
     addressId: number,
     updateAddress: IUpdateAddressUser,
   ): Promise<Address> {
     if (updateAddress.isAddressDefault) {
       await this.addressRepository.update(
-        { user: { id: userId }, isAddressDefault: true },
+        { user: { id: id }, isAddressDefault: true },
         { isAddressDefault: false },
       );
     }
@@ -64,9 +64,9 @@ export class AddressService {
     });
   }
 
-  async allAddress(userId: string): Promise<Address[]> {
+  async allAddress(id: string): Promise<Address[]> {
     return await this.addressRepository.find({
-      where: { user: { id: userId } },
+      where: { user: { id: id } },
       order: { isAddressDefault: 'DESC' },
     });
   }

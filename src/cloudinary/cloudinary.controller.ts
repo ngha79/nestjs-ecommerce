@@ -2,7 +2,6 @@ import {
   Body,
   Controller,
   FileTypeValidator,
-  Get,
   Inject,
   MaxFileSizeValidator,
   ParseFilePipe,
@@ -31,10 +30,7 @@ export class CloudinaryController {
     @Body() uploadImageFromLocal: IUploadImageFromLocal,
     @UploadedFile(
       new ParseFilePipe({
-        validators: [
-          new MaxFileSizeValidator({ maxSize: 1024 * 1024 * 4 }),
-          new FileTypeValidator({ fileType: '.(png|jpeg|jpg)' }),
-        ],
+        validators: [new MaxFileSizeValidator({ maxSize: 1024 * 1024 * 4 })],
       }),
     )
     file: Express.Multer.File,

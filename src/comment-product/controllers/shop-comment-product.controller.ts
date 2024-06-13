@@ -45,17 +45,17 @@ export class ShopCommentProductController {
   ) {
     const comment = await this.shopCommentProductService.createShopComment({
       ...createShopCommentDTO,
-      shopId: user.userId,
+      shopId: user.id,
     });
     if (!comment) throw new BadRequestException('Có lỗi xảy ra.');
     const images = await this.cloudinaryService.uploadImageFromLocal(files, {
-      folderName: user.userId,
+      folderName: user.id,
     });
     if (images?.length) {
       await this.shopCommentProductImageService.createShopCommentImage({
         commentId: comment.id,
         images,
-        shopId: user.userId,
+        shopId: user.id,
       });
     }
     return comment;
@@ -75,13 +75,13 @@ export class ShopCommentProductController {
     );
     if (!comment) throw new BadRequestException('Có lỗi xảy ra.');
     const images = await this.cloudinaryService.uploadImageFromLocal(files, {
-      folderName: user.userId,
+      folderName: user.id,
     });
     if (images.length) {
       await this.shopCommentProductImageService.createShopCommentImage({
         commentId: comment.id,
         images,
-        shopId: user.userId,
+        shopId: user.id,
       });
     }
     if (updateShopComment.imageDeleteIds) {

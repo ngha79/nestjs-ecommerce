@@ -4,7 +4,7 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
-  OneToOne,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -15,7 +15,7 @@ export class AddressShop {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @OneToOne(() => Shop, (shop) => shop.address)
+  @ManyToOne(() => Shop, (shop) => shop.address, { onDelete: 'CASCADE' })
   @JoinColumn()
   shop: Shop;
 

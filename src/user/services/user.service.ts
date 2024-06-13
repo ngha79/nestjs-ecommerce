@@ -57,7 +57,7 @@ export class UserService implements IUserService {
 
   async getProfileUser(user: PayloadToken): Promise<User> {
     return await this.userRepository.findOne({
-      where: { id: user.userId },
+      where: { id: user.id },
       select: [
         'id',
         'email',
@@ -71,20 +71,17 @@ export class UserService implements IUserService {
     });
   }
 
-  async updateProfileUser(
-    userId: string,
-    updateUser: UpdateUser,
-  ): Promise<User> {
-    return await this.userRepository.save({ id: userId, ...updateUser });
+  async updateProfileUser(id: string, updateUser: UpdateUser): Promise<User> {
+    return await this.userRepository.save({ id: id, ...updateUser });
   }
 
-  async updateAvatarUser(userId: string, update: object): Promise<User> {
-    return await this.userRepository.save({ id: userId, ...update });
+  async updateAvatarUser(id: string, update: object): Promise<User> {
+    return await this.userRepository.save({ id: id, ...update });
   }
 
-  async findUserById(userId: string): Promise<User> {
+  async findUserById(id: string): Promise<User> {
     return await this.userRepository.findOne({
-      where: { id: userId },
+      where: { id: id },
       select: [
         'email',
         'userName',
@@ -98,15 +95,15 @@ export class UserService implements IUserService {
     });
   }
 
-  async findUser(userId: string): Promise<User> {
+  async findUser(id: string): Promise<User> {
     return await this.userRepository.findOne({
-      where: { id: userId },
+      where: { id: id },
       select: ['avatar', 'background', 'email', 'userName', 'id'],
     });
   }
 
-  async deleteUserById(userId: string): Promise<DeleteResult> {
-    return await this.userRepository.delete({ id: userId });
+  async deleteUserById(id: string): Promise<DeleteResult> {
+    return await this.userRepository.delete({ id: id });
   }
 
   async findAllUser(querySearch: SearchUsers): Promise<any> {
@@ -201,14 +198,14 @@ export class UserService implements IUserService {
   }
 
   async changePassword(
-    userId: string,
+    id: string,
     changePassword: IChangePassword,
   ): Promise<any> {
     const { confirmPassword, currentPassword, newPassword } = changePassword;
     if (confirmPassword !== newPassword) {
       throw new BadRequestException('Mật khẩu không trùng khớp.');
     }
-    const user = await this.userRepository.findOneBy({ id: userId });
+    const user = await this.userRepository.findOneBy({ id: id });
     if (!user) throw new NotFoundException('Không tìm thấy người dùng!');
     const comparePassword = await compareHash(currentPassword, user.password);
     if (!comparePassword)
@@ -217,7 +214,7 @@ export class UserService implements IUserService {
     const passwordHash = await hashPassword(newPassword);
 
     const update = await this.userRepository.save({
-      id: userId,
+      id: id,
       password: passwordHash,
     });
     if (!update) throw new BadRequestException('Cập nhật mật khẩu thất bại.');

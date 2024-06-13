@@ -1,7 +1,7 @@
 import { IsEmail, IsString, MinLength } from 'class-validator';
 
 export class ChangePasswordDto {
-  userId: string;
+  id: string;
 
   @IsString()
   @MinLength(6)

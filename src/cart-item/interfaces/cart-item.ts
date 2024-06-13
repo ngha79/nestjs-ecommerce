@@ -6,7 +6,7 @@ import { UpdateCartItemDto } from '../dto/update-cart-item.dto';
 export interface ICartItemService {
   createCartItems(createCartItemDto: CreateCartItemDto): Promise<CartItems>;
   updateCartItems(
-    userId: string,
+    id: string,
     updateCartItemDto: UpdateCartItemDto,
   ): Promise<UpdateResult | number>;
   findAll(cartId: string): Promise<CartItems[]>;

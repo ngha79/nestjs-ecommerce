@@ -20,7 +20,6 @@ export class AdminGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const token = this.extractTokenFromHeader(request);
-
     try {
       const payload = await this.jwtService.verify(token, {
         secret: this.configService.get<string>('ACCESSTOKEN_KEY'),
@@ -28,7 +27,7 @@ export class AdminGuard implements CanActivate {
       request.user = payload;
       const admin = await this.adminRepo.findOne({
         where: {
-          id: payload.userId,
+          id: payload.id,
         },
       });
       if (!admin) {
@@ -48,11 +47,11 @@ export class AdminGuard implements CanActivate {
   }
 
   private async extractKeyTokenFromHeader(
-    userId: string,
+    id: string,
   ): Promise<KeyToken | undefined> {
-    if (!userId) return undefined;
+    if (!id) return undefined;
     const keyToken = await this.keyTokenRepository.findOne({
-      where: { userId: userId },
+      where: { userId: id },
     });
     return keyToken;
   }

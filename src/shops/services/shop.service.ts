@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   BadRequestException,
   Injectable,
@@ -7,8 +8,8 @@ import {
 import { IShopService } from '../interfaces/shop';
 import { Shop } from 'src/entities/shop.entity';
 import { CreateShopDto } from '../dto/create-shop.dto';
-import { InjectRepository } from '@nestjs/typeorm';
-import { DeleteResult, Repository, UpdateResult } from 'typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import { DataSource, DeleteResult, Repository, UpdateResult } from 'typeorm';
 import { compareHash, hashPassword } from 'src/utils/helper';
 import { ShopAlreadyExists } from '../exceptions/ShopAlreadyExist';
 import { UpdateShopDto } from '../dto/update-shop.dto';
@@ -26,6 +27,7 @@ export class ShopService implements IShopService {
     @InjectRepository(Shop) private readonly shopRepository: Repository<Shop>,
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
+    @InjectDataSource() private dataSource: DataSource,
   ) {}
 
   async createShop(createShopDto: CreateShopDto): Promise<Shop> {
@@ -64,10 +66,12 @@ export class ShopService implements IShopService {
   }
 
   async findShopById(id: string): Promise<Shop> {
-    return await this.shopRepository.findOne({
+    const shop = await this.shopRepository.findOne({
       where: { id },
       relations: ['followers', 'address'],
     });
+    if (!shop) throw new NotFoundException('Shop not found!');
+    return shop;
   }
 
   async findProfileShopById(id: string): Promise<any> {
@@ -105,6 +109,12 @@ export class ShopService implements IShopService {
         id,
       },
       relations: ['followers', 'address'],
+      select: {
+        id: true,
+        userName: true,
+        avatar: true,
+        background: true,
+      },
     });
   }
 
@@ -121,16 +131,13 @@ export class ShopService implements IShopService {
 
   async findShop(params: FindShopParams): Promise<any> {
     const {
-      id,
       isActive,
       search = '',
       page = '1',
       limit = '20',
       order = 'userName',
     } = params;
-    if (id) {
-      return await this.shopRepository.findBy({ id: id });
-    }
+
     let typeCount = '';
     if (order === 'followers') typeCount = 'followersCount';
     const take = parseInt(limit);
@@ -210,20 +217,24 @@ export class ShopService implements IShopService {
   }
 
   async changePassword({
-    userId,
+    id,
     currentPassword,
     newPassword,
   }: ChangePasswordDto): Promise<Shop> {
     if (currentPassword === newPassword)
       throw new BadRequestException('Mật khẩu trùng khớp.');
-    const shop = await this.findShopById(userId);
+    const shop = await this.findShopById(id);
     if (!shop) throw new NotFoundException('Shop không tồn tại.');
     if (shop.isActive === 'band')
-      throw new UnauthorizedException('Shop bị cấm hoạt động.');
+      throw new BadRequestException('Shop bị cấm hoạt động.');
     const isChecked = await compareHash(currentPassword, shop.password);
     if (!isChecked) throw new BadRequestException('Mật khẩu không chính xác.');
     const passwordHash = await hashPassword(newPassword);
-    return await this.shopRepository.save({ ...shop, password: passwordHash });
+    const resposne = await this.shopRepository.save({
+      ...shop,
+      password: passwordHash,
+    });
+    return resposne;
   }
 
   async changePasswordShop({
@@ -241,5 +252,35 @@ export class ShopService implements IShopService {
     if (!isChecked) throw new BadRequestException('Mật khẩu không chính xác.');
     const passwordHash = await hashPassword(newPassword);
     return await this.shopRepository.save({ ...shop, password: passwordHash });
+  }
+
+  async getShopSalesInMonth(shopId: string) {
+    const month = 5;
+    const year = 2024;
+
+    const query = `
+    SELECT
+        COUNT(DISTINCT lo.id) AS total_orders,
+        SUM(lo.total_price) AS total_revenue,
+        COUNT(DISTINCT p.id) AS new_products,
+        COUNT(DISTINCT u.id) AS total_customers
+    FROM
+        shop s
+    LEFT JOIN
+        list_order lo ON s.id = lo.shopId
+    LEFT JOIN
+        \`order\` o ON lo.id = o.listOrderId
+    LEFT JOIN
+        product p ON o.productId = p.id
+    LEFT JOIN
+        user u ON lo.id = u.id
+    WHERE
+        s.id = ?
+        AND EXTRACT(MONTH FROM lo.createdAt) = ?
+        AND EXTRACT(YEAR FROM lo.createdAt) = ?
+`;
+
+    const result = await this.dataSource.query(query, [shopId, month, year]);
+    return result[0];
   }
 }

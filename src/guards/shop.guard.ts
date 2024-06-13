@@ -27,7 +27,7 @@ export class ShopGuard implements CanActivate {
       request.user = payload;
       const shopIsActive = await this.shopRepository.findOne({
         where: {
-          id: payload.userId,
+          id: payload.id,
           isActive: StatusShop.ACTIVE,
         },
       });
@@ -48,11 +48,11 @@ export class ShopGuard implements CanActivate {
   }
 
   private async extractKeyTokenFromHeader(
-    userId: string,
+    id: string,
   ): Promise<KeyToken | undefined> {
-    if (!userId) return undefined;
+    if (!id) return undefined;
     const keyToken = await this.keyTokenRepository.findOne({
-      where: { userId: userId },
+      where: { userId: id },
     });
     return keyToken;
   }

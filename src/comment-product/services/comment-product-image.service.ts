@@ -25,7 +25,7 @@ export class CommentProductImageService implements ICommentProductImage {
   async createCommentImage({
     commentId,
     images,
-    userId,
+    id,
     productId,
   }: CreateCommentImageDTO): Promise<CommentImage[]> {
     const comment = await this.commentRepo.findOneBy({ id: commentId });
@@ -36,7 +36,7 @@ export class CommentProductImageService implements ICommentProductImage {
           comment,
           image_id: image.public_id,
           image_url: image.secure_url,
-          user: { id: userId },
+          user: { id: id },
           product: { id: productId },
         });
       }),

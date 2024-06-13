@@ -84,12 +84,11 @@ export class ProductImageService {
     shopId: string,
     querySearchImageProduct: QuerySearchImageProduct,
   ) {
-    const shop = await this.shopService.checkShopIsActive(shopId);
     const page = parseInt(querySearchImageProduct.page);
     const limit = parseInt(querySearchImageProduct.limit);
     const skip = (page - 1) * limit;
     const [res, total] = await this.productImageRepository.findAndCount({
-      where: { shop: shop },
+      where: { shop: { id: shopId } },
       relations: ['attributes'],
       take: limit,
       skip: skip,

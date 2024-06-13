@@ -13,7 +13,7 @@ export class SearchProduct {
 
   brand?: BrandProduct;
 
-  order?: 'ASC' | 'DESC';
+  order?: 'asc' | 'desc';
 
   searchBy: 'ctime' | 'price' | 'sales';
 

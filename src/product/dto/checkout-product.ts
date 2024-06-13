@@ -3,14 +3,14 @@ import { ProductAttribute } from 'src/entities/productAttribute.entity';
 
 export interface ICheckOutProduct {
   cartId?: string;
-  userId: string;
+  id: string;
   address?: Address;
   shop_order_ids: ProductOrder[];
 }
 
 export interface ICheckOut {
   cartId?: string;
-  userId: string;
+  id: string;
   address?: Address;
   shop_order_ids: ProductOrderCheckout[];
 }
@@ -29,7 +29,9 @@ export interface ProductOrderCheckout {
 
 export interface ItemProduct {
   productAttribute: ProductAttribute;
-  quantity: number;
+  quantity?: number;
+  total_price?: number;
+  total_price_apply?: number;
   price: number;
 }
 

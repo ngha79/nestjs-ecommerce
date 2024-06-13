@@ -14,11 +14,16 @@ export class DiscountUserUsed {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @OneToOne(() => User, (user) => user, { createForeignKeyConstraints: false })
+  @OneToOne(() => User, (user) => user, {
+    createForeignKeyConstraints: false,
+    onDelete: 'CASCADE',
+  })
   @JoinColumn()
   user: User;
 
-  @ManyToOne(() => Discount, (discount) => discount)
+  @ManyToOne(() => Discount, (discount) => discount, {
+    onDelete: 'CASCADE',
+  })
   discount: Discount;
 
   @Column()

@@ -5,6 +5,6 @@ export class QuerySearchOrder {
   limit: number | 20;
   search?: string;
   userId?: string;
-  shopId?: string
+  shopId?: string;
   status?: StatusOrder;
 }

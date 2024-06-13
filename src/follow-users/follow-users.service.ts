@@ -2,7 +2,6 @@ import {
   BadRequestException,
   Inject,
   Injectable,
-  UnauthorizedException,
   forwardRef,
 } from '@nestjs/common';
 import { CreateFollowUserDto } from './dto/create-follow-user.dto';
@@ -31,48 +30,58 @@ export class FollowUsersService {
   ) {}
 
   async create(
-    userId: string,
+    id: string,
     createFollowUserDto: CreateFollowUserDto,
   ): Promise<InsertResult> {
-    const user = await this.userService.findUserById(userId);
-    if (!user) throw new UnauthorizedException('User not found!');
-    const userFollow = await this.userService.findUserById(
+    const checkIsFollow = await this.findOneByUser(
+      id,
       createFollowUserDto.followId,
     );
-    if (!userFollow)
-      throw new UnauthorizedException('User you follow not found!');
+    if (checkIsFollow)
+      throw new BadRequestException('Bạn đã theo dõi người dùng này rồi.');
     return await this.followsUserRepository
       .createQueryBuilder()
       .insert()
       .into(FollowsUser)
       .values({
-        user: user,
-        userFollow: userFollow,
+        user: {
+          id: id,
+        },
+        userFollow: {
+          id: createFollowUserDto.followId,
+        },
       })
       .execute();
   }
 
+  async findOneByUser(id: string, followId: string): Promise<FollowsUser> {
+    return await this.followsUserRepository.findOneBy({
+      user: { id: id },
+      userFollow: { id: followId },
+    });
+  }
+
   async unfollow(
-    userId: string,
+    id: string,
     { followId }: CreateFollowUserDto,
   ): Promise<DeleteResult> {
     return await this.followsUserRepository.delete({
-      user: { id: userId },
+      user: { id: id },
       userFollow: { id: followId },
     });
   }
 
   async getTotalFollowerAndFollowingUser(
-    userId: string,
+    id: string,
   ): Promise<ResultTotalFollow> {
-    const user = await this.userService.findUserById(userId);
+    const user = await this.userService.findUserById(id);
     if (!user) throw new BadRequestException('User notfound!');
 
     const followers = await this.followsUserRepository.countBy({
-      user: { id: userId },
+      user: { id: id },
     });
     const following = await this.followsUserRepository.countBy({
-      userFollow: { id: userId },
+      userFollow: { id: id },
     });
     return { following, followers };
   }
@@ -97,11 +106,11 @@ export class FollowUsersService {
     const limit = +findAllUserFollow.limit;
     const page = +findAllUserFollow.page;
     const skip = (page - 1) * limit;
-    const user = await this.userService.findUserById(findAllUserFollow.userId);
+    const user = await this.userService.findUserById(findAllUserFollow.id);
     if (!user) throw new BadRequestException('User not found!');
     const [res, total] = await this.userRepository.findAndCount({
       where: {
-        // following: findAllUserFollow.userId,
+        // following: findAllUserFollow.id,
         userName: Like(findAllUserFollow.search),
       },
       skip: skip,

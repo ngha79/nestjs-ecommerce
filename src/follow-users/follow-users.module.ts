@@ -7,11 +7,14 @@ import { FollowsUser } from 'src/entities/followsUser.entity';
 import { UserModule } from 'src/user/user.module';
 import { User } from 'src/entities/user.entity';
 import { Shop } from 'src/entities/shop.entity';
+import { JwtModule } from '@nestjs/jwt';
+import { KeyToken } from 'src/entities/keytoken.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([FollowsUser, User, Shop]),
+    TypeOrmModule.forFeature([FollowsUser, User, Shop, KeyToken]),
     forwardRef(() => UserModule),
+    JwtModule,
   ],
   controllers: [FollowUsersController],
   providers: [{ provide: Services.FOLLOW_USERS, useClass: FollowUsersService }],

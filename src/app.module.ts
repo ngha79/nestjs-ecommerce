@@ -2,8 +2,6 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { dataSourceOptions } from 'db/data-source';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
@@ -20,11 +18,20 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { AdminModule } from './admin/admin.module';
 import { CommentProductModule } from './comment-product/comment-product.module';
 import { WishlistModule } from './wishlist/wishlist.module';
+import { DatabaseModule } from './database/database.module';
+import { BlogModule } from './blog/blog.module';
+import { MailerModule } from './mailer/mailer.module';
+import { ConversationModule } from './conversation/conversation.module';
+import { GatewayModule } from './adapters/gateway.module';
+import { NotificationsModule } from './notifications/notifications.module';
+import { EventsModule } from './events/events.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { ReportModule } from './report/report.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot(dataSourceOptions),
     ConfigModule.forRoot({ isGlobal: true }),
+    DatabaseModule,
     UserModule,
     AuthModule,
     CloudinaryModule,
@@ -41,6 +48,14 @@ import { WishlistModule } from './wishlist/wishlist.module';
     AdminModule,
     CommentProductModule,
     WishlistModule,
+    BlogModule,
+    MailerModule,
+    ConversationModule,
+    GatewayModule,
+    NotificationsModule,
+    EventEmitterModule.forRoot(),
+    EventsModule,
+    ReportModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -18,5 +18,5 @@ export interface IAdminService {
   ): Promise<AdminEcommerce[] | AdminEcommerce>;
   updateStatusShop(shopId: string, update: StatusShop): Promise<Shop>;
   deleteShop(shopId: string): Promise<DeleteResult>;
-  deleteUser(userId: string): Promise<DeleteResult>;
+  deleteUser(id: string): Promise<DeleteResult>;
 }

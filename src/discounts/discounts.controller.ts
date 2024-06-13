@@ -34,7 +34,7 @@ export class DiscountsController {
     @UserRequest() user: PayloadToken,
     @Body() createDiscountDto: CreateDiscountDto,
   ) {
-    return this.discountsService.create(user.userId, createDiscountDto);
+    return this.discountsService.create(user.id, createDiscountDto);
   }
 
   @Get()
@@ -48,6 +48,7 @@ export class DiscountsController {
   }
 
   @Put(':id')
+  @UseGuards(ShopGuard)
   update(
     @Param('id') id: string,
     @Body() updateDiscountDto: UpdateDiscountDto,
@@ -56,16 +57,19 @@ export class DiscountsController {
   }
 
   @Patch('active')
+  @UseGuards(ShopGuard)
   activeDiscount(@Body('') activeDiscountsDTO: ActiveDiscountsDTO) {
     return this.discountsService.activeDiscounts(activeDiscountsDTO.ids);
   }
 
   @Patch('unactive')
+  @UseGuards(ShopGuard)
   unactiveDiscount(@Body('') activeDiscountsDTO: ActiveDiscountsDTO) {
     return this.discountsService.unactiveDiscounts(activeDiscountsDTO.ids);
   }
 
   @Delete(':id')
+  @UseGuards(ShopGuard)
   remove(@Param('id') id: string) {
     return this.discountsService.remove(id);
   }

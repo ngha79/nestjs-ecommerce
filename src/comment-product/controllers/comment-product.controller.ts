@@ -49,18 +49,18 @@ export class CommentProductController {
   ) {
     const comment = await this.commentProductService.createComment({
       ...createCommentDTO,
-      userId: user.userId,
+      userId: user.id,
     });
     if (!comment) throw new BadRequestException('Có lỗi xảy ra.');
     const images = await this.cloudinaryService.uploadImageFromLocal(files, {
-      folderName: user.userId,
+      folderName: user.id,
     });
     if (images.length) {
       await this.commentProductImageService.createCommentImage({
         commentId: comment.id,
         images,
         ...createCommentDTO,
-        userId: user.userId,
+        id: user.id,
       });
     }
     return await this.commentProductService.getCommentById(comment.id);
@@ -80,14 +80,14 @@ export class CommentProductController {
     );
     if (!comment) throw new BadRequestException('Có lỗi xảy ra.');
     const images = await this.cloudinaryService.uploadImageFromLocal(files, {
-      folderName: user.userId,
+      folderName: user.id,
     });
     if (images.length) {
       await this.commentProductImageService.createCommentImage({
         commentId: comment.id,
         images,
         ...updateComment,
-        userId: user.userId,
+        id: user.id,
       });
     }
     if (updateComment.imageDeleteIds) {
@@ -98,14 +98,14 @@ export class CommentProductController {
     return await this.commentProductService.getCommentById(comment.id);
   }
 
-  @Delete(':userId/:commentId')
+  @Delete(':id/:commentId')
   async deleteComment(
-    @Param() userId: string,
+    @Param() id: string,
     @Param() commentId: string,
   ): Promise<DeleteResult> {
     const isDelete = await this.commentProductService.deleteComment(
       commentId,
-      userId,
+      id,
     );
     await this.commentProductImageService.deleteCommentImageByComment(
       commentId,
@@ -123,7 +123,7 @@ export class CommentProductController {
     return await this.commentProductService.getCommentById(commentId);
   }
 
-  @Put(':shopId')
+  @Get('/shop/:shopId')
   async getRatingShop(@Param('shopId') shopId: string): Promise<any> {
     return await this.commentProductService.getRatingShop(shopId);
   }
@@ -139,7 +139,7 @@ export class CommentProductController {
     @UserRequest() user: PayloadToken,
     @Param('commentId') commentId: string,
   ): Promise<any> {
-    return await this.commentProductService.likeComment(user.userId, commentId);
+    return await this.commentProductService.likeComment(user.id, commentId);
   }
 
   //Report
@@ -150,7 +150,7 @@ export class CommentProductController {
     @Body() createReportDto: CreateReportDto,
   ): Promise<any> {
     return await this.commentProductService.userReport(
-      user.userId,
+      user.id,
       createReportDto,
     );
   }

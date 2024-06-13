@@ -19,7 +19,7 @@ export class Cart {
   @JoinColumn()
   user: User;
 
-  @OneToMany(() => CartItems, (cartItems) => cartItems.cart)
+  @OneToMany(() => CartItems, (cartItems) => cartItems.cart, { cascade: true })
   @JoinColumn()
   cartItems: CartItems[];
 

@@ -31,7 +31,7 @@ export class CartController {
     @UserRequest() user: PayloadToken,
     @Body() createCartDto: CreateCartDto,
   ) {
-    return this.cartService.create(user.userId, createCartDto);
+    return this.cartService.create(user.id, createCartDto);
   }
 
   @Get('list')
@@ -41,7 +41,7 @@ export class CartController {
 
   @Get('')
   findOneUser(@UserRequest() user: PayloadToken) {
-    return this.cartService.findOneByUser(user.userId);
+    return this.cartService.findOneByUser(user.id);
   }
 
   @Get('user/:id')

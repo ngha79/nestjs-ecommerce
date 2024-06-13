@@ -20,4 +20,5 @@ export interface IShopService {
   changePasswordShop(
     changePasswordShopDto: ChangePasswordShopDto,
   ): Promise<Shop>;
+  getShopSalesInMonth(id: string): Promise<any>;
 }

@@ -1,12 +1,20 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsNumber } from 'class-validator';
+import { IsEmail, IsString } from 'class-validator';
 
 export class PayloadToken {
-  @IsNumber()
+  @IsString()
   @ApiProperty()
-  userId: string;
+  id: string;
 
   @ApiProperty()
   @IsEmail()
   email: string;
+
+  @IsString()
+  @ApiProperty()
+  userName: string;
+
+  @IsString()
+  @ApiProperty()
+  avatar?: string;
 }

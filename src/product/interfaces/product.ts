@@ -31,14 +31,14 @@ export interface IProductService {
     productId: string,
     updateAttributeProduct: IUpdateAttributeProduct,
   ): Promise<ProductAttribute>;
-  deleteProductById(productId: string, userId: string): Promise<boolean>;
+  deleteProductById(productId: string): Promise<boolean>;
   allProduct(productSearch: SearchProduct): Promise<any>;
   allProductShop(productSearch: SearchProductShop): Promise<any>;
   checkProductByServer(products: ItemProduct[]): Promise<ItemProduct[]>;
   likeProduct(
-    userId: string,
+    id: string,
     productId: string,
     shopId: string,
   ): Promise<LikeProduct>;
-  unlikeProduct(userId: string, productId: string): Promise<DeleteResult>;
+  unlikeProduct(id: string, productId: string): Promise<DeleteResult>;
 }

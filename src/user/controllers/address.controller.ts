@@ -37,7 +37,7 @@ export class AddressController {
     @Body() infoAddressUser: InfoAddressUser,
   ): Promise<Address> {
     return this.addressService.insertAddressForAccount(
-      user.userId,
+      user.id,
       infoAddressUser,
     );
   }
@@ -50,7 +50,7 @@ export class AddressController {
     @Body() updateAddress: IUpdateAddressUser,
   ): Promise<Address> {
     return this.addressService.updateAddressForAccount(
-      user.userId,
+      user.id,
       addressId,
       updateAddress,
     );
@@ -70,6 +70,6 @@ export class AddressController {
   @UseGuards(AuthGuard)
   @Get('')
   allAddress(@UserRequest() user: PayloadToken): Promise<Address[]> {
-    return this.addressService.allAddress(user.userId);
+    return this.addressService.allAddress(user.id);
   }
 }

@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Inject,
   Param,
@@ -11,7 +12,6 @@ import {
 import { Services } from 'src/utils/constants';
 import { ReportService } from './report.service';
 import { CreateReportDto } from './dto/create-report';
-import { Report } from 'src/entities/report.entity';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { UserRequest } from 'src/user/user.decorator';
 import { PayloadToken } from 'src/auth/dto/payload-token.dto';
@@ -25,19 +25,19 @@ export class ReportController {
     @Inject(Services.REPORT) private readonly reportService: ReportService,
   ) {}
 
-  @Post()
   @UseGuards(AuthGuard)
+  @Post('')
   createReport(
     @UserRequest() user: PayloadToken,
     @Body() createReport: CreateReportDto,
-  ): Promise<Report> {
+  ) {
     return this.reportService.createReport({
       ...createReport,
-      userId: user.userId,
+      userId: user.id,
     });
   }
 
-  @Post(':id')
+  @Delete(':id')
   @UseGuards(AuthGuard)
   deleteReport(@Param('id') id: string): Promise<DeleteResult> {
     return this.reportService.deleteReport(id);

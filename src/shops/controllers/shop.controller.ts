@@ -36,6 +36,7 @@ import {
   ChangePasswordDto,
   ChangePasswordShopDto,
 } from '../dto/change-password.dto';
+import { UserRequest } from 'src/user/user.decorator';
 
 @Controller('shop')
 export class ShopController {
@@ -64,23 +65,26 @@ export class ShopController {
     @Body() createShopAdmin: CreateShopAdminDto,
     @UploadedFiles()
     files: {
-      avatar?: Express.Multer.File;
-      background?: Express.Multer.File;
+      fileAvatar?: Express.Multer.File;
+      fileBackground?: Express.Multer.File;
     },
   ): Promise<Shop> {
     const checkShop = await this.shopService.createShopAdmin(createShopAdmin);
-    if (files?.avatar) {
-      const image = await this.cloudinaryService.uploadFile(files.avatar[0], {
-        folderName: checkShop.email,
-      });
+    if (files?.fileAvatar) {
+      const image = await this.cloudinaryService.uploadFile(
+        files.fileAvatar[0],
+        {
+          folderName: checkShop.email,
+        },
+      );
 
       if (!image)
         throw new BadRequestException('Có lỗi xảy ra khi tạo người dùng.');
       checkShop.avatar = image.secure_url;
     }
-    if (files?.background) {
+    if (files?.fileBackground) {
       const image = await this.cloudinaryService.uploadFile(
-        files.background[0],
+        files.fileBackground[0],
         {
           folderName: checkShop.email,
         },
@@ -89,7 +93,9 @@ export class ShopController {
         throw new BadRequestException('Có lỗi xảy ra khi tạo người dùng.');
       checkShop.background = image.secure_url;
     }
-    const newShop = await this.shopService.saveShop(checkShop);
+    const newShop = await this.shopService.saveShop({
+      ...checkShop,
+    });
     const addressData = JSON.parse(createShopAdmin.address);
     await this.addressShopService.createAddressShop({
       ...addressData,
@@ -99,20 +105,19 @@ export class ShopController {
   }
 
   @Get(':id')
-  @UseGuards(ShopGuard)
   findShopById(@Param('id') id: string): Promise<Shop> {
     return this.shopService.findShopById(id);
   }
 
-  @Get('info/:id')
-  getInfoShop(@Param('id') id: string): Promise<Shop> {
-    return this.shopService.findProfileShopById(id);
-  }
-
-  @Put('profile')
+  @Get('profile/me')
   @UseGuards(ShopGuard)
   profileShop(@AuthUser() shop: PayloadToken): Promise<Shop> {
-    return this.shopService.profileShop(shop.userId);
+    return this.shopService.profileShop(shop.id);
+  }
+
+  @Get('info-shop/:id')
+  getInfoShop(@Param('id') id: string): Promise<Shop> {
+    return this.shopService.findProfileShopById(id);
   }
 
   @Put()
@@ -121,7 +126,7 @@ export class ShopController {
     @AuthUser() shop: PayloadToken,
     @Body() update: UpdateShopDto,
   ): Promise<Shop> {
-    const shopInfo = await this.findShopById(shop.userId);
+    const shopInfo = await this.findShopById(shop.id);
     return this.shopService.updateShop(shopInfo, update);
   }
 
@@ -160,10 +165,12 @@ export class ShopController {
       update.background = background.secure_url;
     }
     const address = JSON.parse(update.addressUpdate as string);
-    await this.addressShopService.createAddressShop({
-      ...address,
-      shop: shopInfo,
-    });
+    if (address) {
+      await this.addressShopService.createAddressShop({
+        ...address,
+        shop: shopInfo,
+      });
+    }
     return this.shopService.updateShop(shopInfo, update);
   }
 
@@ -175,7 +182,7 @@ export class ShopController {
     @UploadedFile()
     file: Express.Multer.File,
   ): Promise<Shop> {
-    const shopInfo = await this.findShopById(shop.userId);
+    const shopInfo = await this.findShopById(shop.id);
     if (!file) throw new BadRequestException('File is empty');
     const image = await this.cloudinaryService.uploadFile(file, {
       folderName: shopInfo.userName,
@@ -194,7 +201,7 @@ export class ShopController {
     @UploadedFile()
     file: Express.Multer.File,
   ): Promise<Shop> {
-    const shopInfo = await this.findShopById(shop.userId);
+    const shopInfo = await this.findShopById(shop.id);
     if (!file) throw new BadRequestException('File is empty');
     const image = await this.cloudinaryService.uploadFile(file, {
       folderName: shopInfo.userName,
@@ -222,6 +229,7 @@ export class ShopController {
   }
 
   @Put('status')
+  @UseGuards(ShopGuard)
   updateStatusShop(
     @Body() updateStatusShopDTO: UpdateStatusShopDTO,
   ): Promise<UpdateResult> {
@@ -236,7 +244,7 @@ export class ShopController {
   ): Promise<Shop> {
     return this.shopService.changePassword({
       ...changePasswordDto,
-      userId: shop.userId,
+      id: shop.id,
     });
   }
 
@@ -245,5 +253,11 @@ export class ShopController {
     @Body() changePasswordShopDto: ChangePasswordShopDto,
   ): Promise<Shop> {
     return this.shopService.changePasswordShop(changePasswordShopDto);
+  }
+
+  @UseGuards(ShopGuard)
+  @Put('detail-sales')
+  getShopSalesInMonth(@UserRequest() user: PayloadToken) {
+    return this.shopService.getShopSalesInMonth(user.id);
   }
 }

@@ -8,12 +8,14 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
-  OneToOne,
 } from 'typeorm';
 import { Product } from 'src/entities/product.entity';
 import { StatusShop } from 'src/utils/types';
 import { AddressShop } from './address-shop.entity';
 import { LikeProduct } from './like-product.entity';
+import { Conversation } from './conversation.entity';
+import { MessageConversation } from './message.entity';
+import { Notification } from './notification.entity';
 
 @Entity('shop')
 export class Shop {
@@ -29,10 +31,10 @@ export class Shop {
   @Column()
   password: string;
 
-  @Column()
+  @Column({ default: '' })
   phoneNumber: string;
 
-  @Column()
+  @Column({ default: '' })
   description: string;
 
   @Column({
@@ -58,20 +60,61 @@ export class Shop {
   @OneToMany(() => ListOrder, (listOrder) => listOrder.shop)
   orders: ListOrder[];
 
-  @OneToOne(() => AddressShop, (address) => address.shop, {
-    onDelete: 'CASCADE',
-  })
-  address: AddressShop[];
+  @OneToMany(() => AddressShop, (address) => address.shop, { cascade: true })
+  address: AddressShop;
 
-  @OneToMany(() => Product, (product) => product.shop)
+  @OneToMany(() => Product, (product) => product.shop, { cascade: true })
   products: Product[];
 
-  @OneToMany(() => FollowsUser, (followers) => followers.userFollow)
+  @OneToMany(() => FollowsUser, (followers) => followers.userFollow, {
+    cascade: true,
+  })
   followers: FollowsUser[];
 
-  @OneToMany(() => ProductImage, (images) => images.shop)
+  @OneToMany(() => ProductImage, (images) => images.shop, { cascade: true })
   images: ProductImage[];
 
-  @OneToMany(() => LikeProduct, (likeProduct) => likeProduct.shop)
+  @OneToMany(() => LikeProduct, (likeProduct) => likeProduct.shop, {
+    cascade: true,
+  })
   likeProduct: LikeProduct[];
+
+  @OneToMany(() => Conversation, (conversation) => conversation.shop, {
+    cascade: true,
+  })
+  conversation: Conversation[];
+
+  @OneToMany(() => MessageConversation, (message) => message.shop, {
+    cascade: true,
+  })
+  message: MessageConversation[];
+
+  @OneToMany(() => Notification, (notifications) => notifications.shop, {
+    cascade: true,
+  })
+  notifications: Notification[];
+}
+
+@Entity('verify_shop')
+export class VerifyShop {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ unique: true })
+  email: string;
+
+  @Column()
+  userName: string;
+
+  @Column()
+  password: string;
+
+  @Column()
+  phoneNumber: string;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

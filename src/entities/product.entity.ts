@@ -49,24 +49,29 @@ export class Product {
   @Column()
   detail: string;
 
-  @OneToMany(() => ProductAttribute, (attribute) => attribute.product)
+  @OneToMany(() => ProductAttribute, (attribute) => attribute.product, {
+    cascade: true,
+  })
   @JoinColumn()
   attributes: ProductAttribute[];
 
-  @OneToMany(() => ProductImage, (pricture) => pricture.product)
+  @OneToMany(() => ProductImage, (pricture) => pricture.product, {
+    cascade: true,
+  })
   @JoinColumn()
   picture: ProductImage[];
 
-  @OneToMany(() => Comment, (comment) => comment.product)
+  @OneToMany(() => Comment, (comment) => comment.product, { cascade: true })
   @JoinColumn()
   comment: Comment[];
 
-  @ManyToOne(() => Shop)
+  @ManyToOne(() => Shop, { onDelete: 'CASCADE' })
   @JoinColumn()
   shop: Shop;
 
-  @OneToMany(() => LikeProduct, (likeProduct) => likeProduct.product)
-  @JoinColumn()
+  @OneToMany(() => LikeProduct, (likeProduct) => likeProduct.product, {
+    cascade: true,
+  })
   likeProduct: LikeProduct;
 
   @CreateDateColumn()

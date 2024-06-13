@@ -7,9 +7,9 @@ export class FollowsUser {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Shop, (shop) => shop.followers)
+  @ManyToOne(() => Shop, (shop) => shop.followers, { onDelete: 'CASCADE' })
   userFollow: Shop;
 
-  @ManyToOne(() => User, (user) => user.following)
+  @ManyToOne(() => User, (user) => user.following, { onDelete: 'CASCADE' })
   user: User;
 }

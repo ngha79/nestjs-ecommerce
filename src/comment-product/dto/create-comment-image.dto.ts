@@ -1,5 +1,5 @@
 export class CreateCommentImageDTO {
-  userId: string;
+  id: string;
 
   images: any[];
 

@@ -68,9 +68,7 @@ export class ProductController {
     },
   ) {
     const productAttribute = JSON.parse(productDTO.attributes);
-    const checkShopIsActive = await this.shopService.checkShopIsActive(
-      user.userId,
-    );
+    const checkShopIsActive = await this.shopService.checkShopIsActive(user.id);
     if (!checkShopIsActive) {
       throw new BadRequestException('You can not do this');
     }
@@ -110,11 +108,8 @@ export class ProductController {
 
   @Delete(':id')
   @UseGuards(ShopGuard)
-  deleteProduct(
-    @Param('id') id: string,
-    @UserRequest() user: PayloadToken,
-  ): Promise<boolean> {
-    return this.productService.deleteProductById(id, user.userId);
+  deleteProduct(@Param('id') id: string): Promise<boolean> {
+    return this.productService.deleteProductById(id);
   }
 
   @Get(':id')
@@ -151,9 +146,7 @@ export class ProductController {
       attribute?: Express.Multer.File[];
     },
   ): Promise<UpdateResult> {
-    const checkShopIsActive = await this.shopService.checkShopIsActive(
-      user.userId,
-    );
+    const checkShopIsActive = await this.shopService.checkShopIsActive(user.id);
     if (!checkShopIsActive) {
       throw new BadRequestException('You can not do this');
     }
@@ -245,12 +238,12 @@ export class ProductController {
   @UseGuards(AuthGuard)
   @Post('checkout')
   checkoutReview(
-    @UserRequest() result: PayloadToken,
+    @UserRequest() user: PayloadToken,
     @Body() checkOutProduct: ICheckOut,
   ): Promise<any> {
     return this.productService.checkoutReview({
       ...checkOutProduct,
-      userId: result.userId,
+      id: user.id,
     });
   }
 
@@ -260,7 +253,7 @@ export class ProductController {
     @UserRequest() user: PayloadToken,
     @Param('productId') productId: string,
   ): Promise<any> {
-    return this.productService.checkLikeProduct(user.userId, productId);
+    return this.productService.checkLikeProduct(user.id, productId);
   }
 
   @Put('like/:productId/:shopId')
@@ -270,7 +263,7 @@ export class ProductController {
     @Param('productId') productId: string,
     @Param('shopId') shopId: string,
   ): Promise<any> {
-    return this.productService.likeProduct(user.userId, productId, shopId);
+    return this.productService.likeProduct(user.id, productId, shopId);
   }
 
   @Put('unlike/:productId')
@@ -279,6 +272,6 @@ export class ProductController {
     @UserRequest() user: PayloadToken,
     @Param('productId') productId: string,
   ): Promise<any> {
-    return this.productService.unlikeProduct(user.userId, productId);
+    return this.productService.unlikeProduct(user.id, productId);
   }
 }

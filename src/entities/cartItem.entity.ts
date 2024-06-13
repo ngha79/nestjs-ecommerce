@@ -4,7 +4,6 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
-  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -19,13 +18,13 @@ export class CartItems {
   @Column()
   total_product: number;
 
-  @OneToOne(() => ProductAttribute, (product) => product, {
-    createForeignKeyConstraints: false,
+  @ManyToOne(() => ProductAttribute, (product) => product, {
+    onDelete: 'CASCADE',
   })
   @JoinColumn()
   productAttribute: ProductAttribute;
 
-  @ManyToOne(() => Cart, (cart) => cart.cartItems)
+  @ManyToOne(() => Cart, (cart) => cart.cartItems, { onDelete: 'CASCADE' })
   @JoinColumn()
   cart: Cart;
 

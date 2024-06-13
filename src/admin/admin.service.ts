@@ -11,12 +11,15 @@ import { AdminEcommerce } from 'src/entities/admin.entity';
 import { hashPassword } from 'src/utils/helper';
 import { Services } from 'src/utils/constants';
 import { UserService } from 'src/user/services/user.service';
+import { SliderEntity } from 'src/entities/slider.entity';
 
 @Injectable()
 export class AdminService implements IAdminService {
   constructor(
     @InjectRepository(AdminEcommerce)
     private readonly adminRepo: Repository<AdminEcommerce>,
+    @InjectRepository(SliderEntity)
+    private readonly SliderRepo: Repository<SliderEntity>,
     @InjectRepository(Shop)
     private readonly shopRepo: Repository<Shop>,
     @Inject(Services.USERS)
@@ -43,8 +46,8 @@ export class AdminService implements IAdminService {
     return await this.shopRepo.delete({ id: shopId });
   }
 
-  async deleteUser(userId: string): Promise<DeleteResult> {
-    return await this.userService.deleteUserById(userId);
+  async deleteUser(id: string): Promise<DeleteResult> {
+    return await this.userService.deleteUserById(id);
   }
 
   async findAdmin(
@@ -82,5 +85,21 @@ export class AdminService implements IAdminService {
 
   async updateStatusShop(shopId: string, update: StatusShop): Promise<Shop> {
     return await this.shopRepo.save({ id: shopId, isActive: update });
+  }
+
+  async uploadImageSlider(images: any[]) {
+    return await Promise.all(
+      images.map(async (image) => {
+        return await this.SliderRepo.save({ url: image });
+      }),
+    );
+  }
+
+  async getSlider() {
+    return await this.SliderRepo.find();
+  }
+
+  async deleteImage(id: number) {
+    return await this.SliderRepo.delete(id);
   }
 }

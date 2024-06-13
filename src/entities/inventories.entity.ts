@@ -30,15 +30,16 @@ export class Inventory {
 
   @OneToOne(() => ProductAttribute, (product) => product, {
     createForeignKeyConstraints: false,
+    onDelete: 'CASCADE',
   })
   @JoinColumn()
   productAttribute: ProductAttribute;
 
-  @ManyToOne(() => Product, (product) => product)
+  @ManyToOne(() => Product, (product) => product, { onDelete: 'CASCADE' })
   @JoinColumn()
   product: Product;
 
-  @OneToMany(() => Reservation, (reservation) => reservation)
+  @OneToMany(() => Reservation, (reservation) => reservation, { cascade: true })
   @JoinColumn()
   reservations: Reservation[];
 

@@ -55,7 +55,6 @@ export class DiscountsService implements IDiscountsService {
     page,
     search,
     shopId,
-    isActive,
   }: QuerySearchDiscount): Promise<any> {
     const skip = (+page - 1) * +limit;
     const [res, total] = await this.discountRepository.findAndCount({
@@ -63,17 +62,14 @@ export class DiscountsService implements IDiscountsService {
         {
           discount_code: Like(`%${search}%`),
           discount_shop: { id: shopId },
-          discount_is_active: isActive ? isActive : undefined,
         },
         {
           discount_name: Like(`%${search}%`),
           discount_shop: { id: shopId },
-          discount_is_active: isActive ? isActive : undefined,
         },
         {
           discount_description: Like(`%${search}%`),
           discount_shop: { id: shopId },
-          discount_is_active: isActive ? isActive : undefined,
         },
       ],
       skip: skip,
@@ -127,6 +123,10 @@ export class DiscountsService implements IDiscountsService {
     id: string,
     updateDiscountDto: UpdateDiscountDto,
   ): Promise<UpdateResult> {
+    const discount = await this.findOneByCode(updateDiscountDto.discount_code);
+    if (discount && discount.id !== id) {
+      throw new BadRequestException('Mã giảm giá đã tồn tại');
+    }
     const { discount_user_used, ...data } = updateDiscountDto;
     if (discount_user_used) {
       await this.discountUserUsedRepository
@@ -155,7 +155,7 @@ export class DiscountsService implements IDiscountsService {
     return await this.discountRepository.delete({ id });
   }
 
-  // async getDiscountAmount({ codeId, shopId, userId, products }) {
+  // async getDiscountAmount({ codeId, shopId, id, products }) {
   //   const foundDiscount = await this.findOneActive(codeId, shopId);
 
   //   if (!foundDiscount) throw new BadRequestException('Discount not exist!');
@@ -195,7 +195,7 @@ export class DiscountsService implements IDiscountsService {
 
   //   if (discount_max_uses > 0) {
   //     const userUseDiscount = discount_user_used.find(
-  //       (user) => user.user.id === userId,
+  //       (user) => user.user.id === id,
   //     );
   //     if (userUseDiscount) {
   //       throw new BadRequestException('Discount used!');
@@ -236,7 +236,7 @@ export class DiscountsService implements IDiscountsService {
       throw new BadRequestException('Mã giảm giá hết thời gian áp dụng!');
 
     // const user = await this.discountUserUsedRepository.findOne({
-    //   where: { user: { id: applyDiscountCode.userId } },
+    //   where: { user: { id: applyDiscountCode.id } },
     // });
 
     // if (user.total_used >= discount.discount_uses_per_user) {
@@ -276,23 +276,18 @@ export class DiscountsService implements IDiscountsService {
           totalPrice = price;
         } else {
           totalPrice = this.getPriceProduct(
-            price,
+            price * quantity,
             discount.discount_value,
             discount.discount_type,
           );
         }
-
         result.total_price += price * quantity;
-        result.total_price_apply_discount += totalPrice * quantity;
+        result.total_price_apply_discount += totalPrice;
       }
-
       result.product_new.push({
         productAttribute,
         total_price: price * quantity,
-        total_price_apply: Math.min(
-          discount.discount_max_value,
-          totalPrice * quantity,
-        ),
+        total_price_apply: Math.min(discount.discount_max_value, totalPrice),
         quantity: quantity,
       });
     });
@@ -309,5 +304,12 @@ export class DiscountsService implements IDiscountsService {
       return Math.floor((priceProduct * (100 - discount_value)) / 100);
     }
     return discount_value;
+  }
+
+  async updateUseCount(discount: Discount) {
+    return await this.discountRepository.update(
+      { id: discount.id },
+      { discount_use_count: discount.discount_use_count + 1 },
+    );
   }
 }

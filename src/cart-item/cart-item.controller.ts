@@ -31,7 +31,7 @@ export class CartItemController {
     @UserRequest() user: PayloadToken,
     @Body() createCartItemDto: UpdateCartItemDto,
   ) {
-    return this.cartItemService.updateCartItems(user.userId, createCartItemDto);
+    return this.cartItemService.updateCartItems(user.id, createCartItemDto);
   }
 
   @Get('cart:id')

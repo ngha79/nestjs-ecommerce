@@ -63,7 +63,7 @@ export class ProductImageController {
     @Query() querySearchImageProduct: QuerySearchImageProduct,
   ): Promise<any> {
     return this.productImageService.getAllImageByShop(
-      user.userId,
+      user.id,
       querySearchImageProduct,
     );
   }

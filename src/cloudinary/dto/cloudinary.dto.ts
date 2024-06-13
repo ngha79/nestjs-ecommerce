@@ -5,6 +5,6 @@ export interface IUploadImageFromUrl {
 }
 
 export interface IUploadImageFromLocal {
-  folderName: string;
+  folderName?: string;
   fileName?: string;
 }

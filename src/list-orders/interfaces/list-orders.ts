@@ -19,10 +19,6 @@ export interface IListOrdersService {
   findAll(querySearchOrder: QuerySearchOrder): Promise<any>;
   findOne(id: string): Promise<ListOrder>;
   findOneDetail(id: number): Promise<ListOrder>;
-  updateStatus(
-    id: string,
-    updateListOrderDto: UpdateListOrderDto,
-  ): Promise<ListOrder>;
   update(
     listOrder: ListOrder,
     updateListOrderDto: UpdateListOrderDto,

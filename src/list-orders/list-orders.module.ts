@@ -14,6 +14,7 @@ import { ProductModule } from 'src/product/product.module';
 import { KeyToken } from 'src/entities/keytoken.entity';
 import { ShopModule } from 'src/shops/shop.module';
 import { Shop } from 'src/entities/shop.entity';
+import { NotificationsModule } from 'src/notifications/notifications.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { Shop } from 'src/entities/shop.entity';
     DiscountsModule,
     ProductModule,
     ShopModule,
+    NotificationsModule,
   ],
   controllers: [ListOrdersController],
   providers: [{ provide: Services.LIST_ORDER, useClass: ListOrdersService }],

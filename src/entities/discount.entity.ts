@@ -67,7 +67,10 @@ export class Discount {
   @Column({ default: 1 })
   discount_uses_per_user: number;
 
-  @OneToOne(() => Shop, (shop) => shop, { createForeignKeyConstraints: false })
+  @OneToOne(() => Shop, (shop) => shop, {
+    createForeignKeyConstraints: false,
+    onDelete: 'CASCADE',
+  })
   @JoinColumn()
   discount_shop: Shop;
 
@@ -80,7 +83,7 @@ export class Discount {
   })
   discount_is_active: boolean;
 
-  @OneToMany(() => Product, (product) => product)
+  @OneToMany(() => Product, (product) => product, { cascade: true })
   @JoinColumn()
   discount_product_apply_to?: Product[];
 
@@ -91,11 +94,13 @@ export class Discount {
   })
   discount_apply_type: DiscountApplyType;
 
-  @OneToMany(() => DiscountUserUsed, (user) => user)
+  @OneToMany(() => DiscountUserUsed, (user) => user, { cascade: true })
   @JoinColumn()
   discount_user_used: DiscountUserUsed[];
 
-  @OneToMany(() => ListOrder, (listOrder) => listOrder.discounts)
+  @OneToMany(() => ListOrder, (listOrder) => listOrder.discount, {
+    cascade: true,
+  })
   @JoinColumn()
   discount_listOrder: ListOrder;
 

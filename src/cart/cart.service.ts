@@ -21,10 +21,10 @@ export class CartService implements ICartService {
     private dataSource: DataSource,
   ) {}
 
-  async create(userId: string, createCartDto: CreateCartDto): Promise<Cart> {
+  async create(id: string, createCartDto: CreateCartDto): Promise<Cart> {
     return await this.cartRepository.save({
       ...createCartDto,
-      user: { id: userId },
+      user: { id: id },
     });
   }
 
@@ -47,9 +47,9 @@ export class CartService implements ICartService {
     };
   }
 
-  async findOneByUser(userId: string): Promise<any> {
+  async findOneByUser(id: string): Promise<any> {
     const cart = await this.cartRepository.findOne({
-      where: { user: { id: userId } },
+      where: { user: { id: id } },
       relations: [
         'cartItems',
         'cartItems.productAttribute',
@@ -57,7 +57,7 @@ export class CartService implements ICartService {
         'cartItems.productAttribute.product.shop',
       ],
     });
-    if (!cart) return null;
+    if (!cart) return await this.create(id, { cartItems: [] });
     const result = extractShopAndProductInfo(cart.cartItems);
     return { ...cart, cartItems: result };
   }

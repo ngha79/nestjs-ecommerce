@@ -53,8 +53,7 @@ export class InventoriesService implements IInventoriesService {
     const { limit, page, shopId } = findAllInventoryByShop;
     const skip = +limit * (+page - 1);
 
-    const take = +limit;
-    const takePage = +page - 1;
+    const currentPage = +page;
 
     const [res, total] = await this.inventoryRepository.findAndCount({
       where: [
@@ -66,9 +65,9 @@ export class InventoriesService implements IInventoriesService {
       take: +limit,
       skip: skip,
     });
-    const lastPage = Math.floor(total / take);
-    const nextPage = takePage + 1 >= lastPage ? null : takePage + 1;
-    const prevPage = takePage - 1 < 1 ? null : takePage - 1;
+    const lastPage = Math.ceil(total / +limit);
+    const nextPage = currentPage + 1 > lastPage ? null : currentPage + 1;
+    const prevPage = currentPage <= 1 ? null : currentPage - 1;
 
     return {
       data: res,

@@ -28,12 +28,13 @@ export class ListOrder {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToOne(() => User, (user) => user.orders)
+  @ManyToOne(() => User, (user) => user.orders, { onDelete: 'CASCADE' })
   @JoinColumn()
   user: User;
 
   @OneToOne(() => Address, (address) => address, {
     createForeignKeyConstraints: false,
+    onDelete: 'SET NULL',
   })
   @JoinColumn()
   address: Address;
@@ -60,15 +61,18 @@ export class ListOrder {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @OneToMany(() => Order, (order) => order.listOrder)
+  @OneToMany(() => Order, (order) => order.listOrder, { cascade: true })
   @JoinColumn()
   order: Order[];
 
-  @OneToOne(() => Discount, (discount) => discount.discount_listOrder)
+  @OneToOne(() => Discount, (discount) => discount.discount_listOrder, {
+    onDelete: 'SET NULL',
+    createForeignKeyConstraints: false,
+  })
   @JoinColumn()
-  discounts: Discount;
+  discount: Discount;
 
-  @ManyToOne(() => Shop, (shop) => shop.orders)
+  @ManyToOne(() => Shop, (shop) => shop.orders, { onDelete: 'SET NULL' })
   @JoinColumn()
   shop: Shop;
 }

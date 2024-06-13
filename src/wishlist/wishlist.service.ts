@@ -2,7 +2,10 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { IWishlistService } from './interfaces/wishlist';
 import { WishtListProduct } from 'src/entities/wishlist-user.entity';
 import { DeleteResult, In, Like, Repository } from 'typeorm';
-import { AddProductToWishListDto } from './dtos/add-product-wishlist.dto';
+import {
+  AddProductsToWishListDto,
+  AddProductToWishListDto,
+} from './dtos/add-product-wishlist.dto';
 import { GetListWishList } from './dtos/get-list-wishlist.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RemoveProductToWishlistDto } from './dtos/remove-product-wishlist.dto';
@@ -16,21 +19,21 @@ export class WishlistService implements IWishlistService {
 
   async findProductWishList({
     productId,
-    userId,
+    id,
   }: AddProductToWishListDto): Promise<WishtListProduct> {
     return await this.wishlistRepo.findOneBy({
       product: { id: productId },
-      user: { id: userId },
+      user: { id },
     });
   }
 
   async addProductToWishList({
     productId,
-    userId,
+    id,
   }: AddProductToWishListDto): Promise<WishtListProduct> {
     const checkItemIsExist = await this.findProductWishList({
       productId,
-      userId,
+      id,
     });
     if (checkItemIsExist)
       throw new BadRequestException(
@@ -38,8 +41,27 @@ export class WishlistService implements IWishlistService {
       );
     return await this.wishlistRepo.save({
       product: { id: productId },
-      user: { id: userId },
+      user: { id },
     });
+  }
+
+  async addProductsToWishList({
+    productIds,
+    id,
+  }: AddProductsToWishListDto): Promise<any> {
+    return await Promise.all(
+      productIds.map(async (productId: string) => {
+        const checkItemIsExist = await this.findProductWishList({
+          productId,
+          id,
+        });
+        if (!checkItemIsExist)
+          return await this.wishlistRepo.save({
+            product: { id: productId },
+            user: { id },
+          });
+      }),
+    );
   }
 
   async removeProductToWishList({
@@ -51,7 +73,7 @@ export class WishlistService implements IWishlistService {
   }
 
   async getListWishlist(getListWishList: GetListWishList): Promise<any> {
-    const { search, userId, limit, page } = getListWishList;
+    const { search, id, limit, page } = getListWishList;
     const take = parseInt(limit);
     const takePage = parseInt(page);
     const skip = take * (takePage - 1);
@@ -61,7 +83,7 @@ export class WishlistService implements IWishlistService {
           product: {
             slug: Like('%' + search + '%'),
           },
-          user: { id: userId },
+          user: { id: id },
         },
       ],
       take: take,

@@ -6,9 +6,9 @@ import { QueryCartDto } from '../dto/query-cart.dto';
 import { DeleteCartDto } from '../dto/delete-cart.dto';
 
 export interface ICartService {
-  create(userId: string, createCartDto: CreateCartDto): Promise<Cart>;
+  create(id: string, createCartDto: CreateCartDto): Promise<Cart>;
   findAll(queryCartDto: QueryCartDto): Promise<any>;
-  findOneByUser(userId: string): Promise<any>;
+  findOneByUser(id: string): Promise<any>;
   findOne(cartId: string): Promise<Cart>;
   update(id: string, updateCart: UpdateCartDto): Promise<UpdateResult>;
   remove(id: string): Promise<boolean>;

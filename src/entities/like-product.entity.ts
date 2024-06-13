@@ -14,6 +14,6 @@ export class LikeProduct {
   @ManyToOne(() => Product, (product) => product.likeProduct)
   product: Product;
 
-  @ManyToOne(() => Shop, (shop) => shop.likeProduct)
+  @ManyToOne(() => Shop, (shop) => shop.likeProduct, { onDelete: 'CASCADE' })
   shop: Shop;
 }

@@ -4,7 +4,7 @@ import { ItemProduct } from 'src/product/dto/checkout-product';
 
 export class CreateListOrderDto {
   productIds: ItemProduct[];
-  userId: string;
+  id: string;
   codeId: string;
   address: Address;
   shopId: string;
@@ -12,7 +12,7 @@ export class CreateListOrderDto {
 
 export interface ICreateListOrders {
   cartId?: string;
-  userId: string;
+  id: string;
   address?: Address;
   shop_order_ids_new: ProductOrderNew[];
   shop_order_ids: ProductOrder[];

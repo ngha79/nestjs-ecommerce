@@ -34,6 +34,9 @@ export class Comment {
   @JoinColumn()
   shopComment: ShopComment[];
 
+  @Column({ default: 0 })
+  totalLike: number;
+
   @Column()
   rating: number;
 

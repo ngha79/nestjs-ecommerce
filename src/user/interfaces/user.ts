@@ -8,14 +8,14 @@ import { IChangePassword } from '../dto/change-password';
 
 export interface IUserService {
   getProfileUser(user: PayloadToken): Promise<User>;
-  updateProfileUser(userId: string, update: UpdateUser): Promise<User>;
-  updateAvatarUser(userId: string, update: object): Promise<User>;
-  findUserById(userId: string): Promise<User>;
-  findUser(userId: string): Promise<User>;
-  deleteUserById(userId: string): Promise<DeleteResult>;
+  updateProfileUser(id: string, update: UpdateUser): Promise<User>;
+  updateAvatarUser(id: string, update: object): Promise<User>;
+  findUserById(id: string): Promise<User>;
+  findUser(id: string): Promise<User>;
+  deleteUserById(id: string): Promise<DeleteResult>;
   findAllUser(querySearch: SearchUsers): Promise<any>;
   checkShopIsActive(shopId: string): Promise<User>;
   getShop(shopId: string): Promise<ProfileUser>;
   findShopByProduct(productId: string): Promise<User>;
-  changePassword(userId: string, changePassword: IChangePassword): Promise<any>;
+  changePassword(id: string, changePassword: IChangePassword): Promise<any>;
 }

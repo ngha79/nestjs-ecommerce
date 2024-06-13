@@ -22,7 +22,9 @@ export class Reservation {
   @JoinColumn()
   order: Order;
 
-  @ManyToOne(() => Inventory, (inven) => inven.reservations)
+  @ManyToOne(() => Inventory, (inven) => inven.reservations, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn()
   inventory: Inventory;
 

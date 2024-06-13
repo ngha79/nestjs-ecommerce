@@ -1,3 +1,5 @@
+import { Conversation } from 'src/entities/conversation.entity';
+import { MessageConversation } from 'src/entities/message.entity';
 import { User } from 'src/entities/user.entity';
 
 export enum StatusShop {
@@ -43,3 +45,24 @@ export enum BrandProduct {
   TOYS = 'Đồ chơi',
   PETCARE = 'Chăm sóc thú cưng',
 }
+
+export type CreateMessageResponse = {
+  message: MessageConversation;
+  conversation?: Conversation;
+};
+
+export type UpdateMessageResponse = {
+  message: MessageConversation;
+  conversation: Conversation;
+};
+
+export type DeleteMessageResponse = {
+  message: MessageConversation;
+  conversation: Conversation;
+};
+
+export type NotificationResponse = {
+  notification: Notification;
+  userId: string;
+  shopId: string;
+};

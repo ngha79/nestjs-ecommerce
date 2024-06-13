@@ -17,17 +17,21 @@ export class Order {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => ListOrder, (listOrder) => listOrder.order)
+  @ManyToOne(() => ListOrder, (listOrder) => listOrder.order, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn()
   listOrder: ListOrder;
 
-  @OneToOne(() => Product, (product) => product, {
+  @OneToOne(() => Product, {
     createForeignKeyConstraints: false,
+    onDelete: 'SET NULL',
   })
   @JoinColumn()
   product: Product;
 
-  @OneToOne(() => ProductAttribute, (product) => product, {
+  @OneToOne(() => ProductAttribute, {
+    onDelete: 'SET NULL',
     createForeignKeyConstraints: false,
   })
   @JoinColumn()

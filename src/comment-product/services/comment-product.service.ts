@@ -46,7 +46,13 @@ export class CommentProductService implements ICommentProduct {
           userName: true,
         },
       },
-      relations: ['commentImage', 'user'],
+      relations: [
+        'commentImage',
+        'user',
+        'shopComment',
+        'shopComment.shop',
+        'shopComment.images',
+      ],
     });
     return comment;
   }
@@ -91,27 +97,27 @@ export class CommentProductService implements ICommentProduct {
     shopId,
     order,
   }: QuerySearchDTO): Promise<any> {
+    // tính toán skip và take
     const pageComment = parseInt(page) - 1;
     const take = parseInt(limit);
     const skip = take * pageComment;
-    let orderReview;
-    if (order === 'highest') orderReview = { rating: 'ASC' };
-    if (order === 'lowest') orderReview = { rating: 'DESC' };
-    if (order === 'oldest') orderReview = { createdAt: 'ASC' };
-    if (order === 'recent') orderReview = { createdAt: 'DESC' };
-    const [res, total] = await this.commentRepo.findAndCount({
+    // mapping thứ tự sắp xếp
+    const orderMap = {
+      highest: { rating: 'ASC' },
+      lowest: { rating: 'DESC' },
+      oldest: { createdAt: 'ASC' },
+      recent: { createdAt: 'DESC' },
+    };
+    let orderReview = null;
+    if (orderMap[order]) {
+      orderReview = orderMap[order];
+    }
+    // Tìm các nhận xét dựa trên các tiêu chí tìm kiếm
+    const [comments, total] = await this.commentRepo.findAndCount({
       where: [
-        {
-          product: { id: productId },
-          rating,
-        },
-        {
-          product: { shop: { id: shopId } },
-          rating,
-        },
-        {
-          user: { id: userId },
-        },
+        { product: { id: productId }, rating },
+        { product: { shop: { id: shopId } }, rating },
+        { user: { id: userId } },
       ],
       skip: skip,
       take: take,
@@ -133,12 +139,7 @@ export class CommentProductService implements ICommentProduct {
         id: true,
         createdAt: true,
         rating: true,
-        user: {
-          userName: true,
-          avatar: true,
-          email: true,
-          id: true,
-        },
+        user: { userName: true, avatar: true, email: true, id: true },
         shopComment: {
           content: true,
           createdAt: true,
@@ -151,50 +152,17 @@ export class CommentProductService implements ICommentProduct {
           },
           shop: { avatar: true, userName: true, id: true },
         },
+        totalLike: true,
       },
-      order: order
-        ? orderReview
-        : {
-            createdAt: 'ASC',
-          },
+      order: order ? orderReview : { createdAt: 'ASC' },
     });
-    const qb = this.commentRepo.createQueryBuilder('comment');
-
-    qb.leftJoinAndSelect('comment.likeComment', 'likeComment')
-      .select(['COUNT(likeComment.id) as likeComment', 'comment.id as id'])
-      .where('1=1');
-
-    if (productId) {
-      qb.andWhere('comment.product.id = :productId', { productId });
-    }
-    if (rating) {
-      qb.andWhere('comment.rating = :rating', { rating });
-    }
-    if (shopId) {
-      qb.andWhere('comment.product.shop.id = :shopId', { shopId });
-    }
-    if (userId) {
-      qb.andWhere('comment.user.id = :userId', { userId });
-    }
-    const commentLikes = await qb
-      .groupBy('comment.id')
-      .orderBy('comment.createdAt', 'ASC')
-      .skip(skip)
-      .limit(take)
-      .getRawMany();
-    const finalResult = res.map((item) => {
-      const comment = commentLikes.find((comment) => comment.id === item.id);
-      if (comment) {
-        item['totalLike'] = +comment.likeComment;
-      }
-      return item;
-    });
+    // Tính toán các thông tin phân trang
     const lastPage = Math.floor(total / take);
-    const nextPage = pageComment + 1 > lastPage ? null : pageComment + 1;
-    const prevPage = pageComment < 1 ? null : pageComment - 1;
-
+    const nextPage = pageComment >= lastPage - 1 ? null : parseInt(page) + 1;
+    const prevPage = pageComment < 1 ? null : parseInt(page) - 1;
+    // Trả về dữ liệu phân trang
     return {
-      data: finalResult,
+      data: comments,
       lastPage,
       nextPage,
       prevPage,
@@ -250,11 +218,30 @@ export class CommentProductService implements ICommentProduct {
   async likeComment(userId: string, id: string): Promise<boolean> {
     const checkLikeComment = await this.findLikeComment(id);
     if (checkLikeComment) {
-      await this.likeCommentRepo.delete({ comment: { id } });
-      return false;
+      const comment = await this.commentRepo.findOneBy({ id });
+
+      if (comment) {
+        comment.totalLike -= 1;
+
+        await this.commentRepo.save(comment);
+
+        await this.likeCommentRepo.delete({ comment: { id } });
+
+        return false;
+      }
+    } else {
+      const comment = await this.commentRepo.findOneBy({ id });
+
+      if (comment) {
+        comment.totalLike += 1;
+
+        await this.commentRepo.save(comment);
+
+        await this.createLikeComment(userId, id);
+
+        return true;
+      }
     }
-    await this.createLikeComment(userId, id);
-    return true;
   }
 
   async findReport(

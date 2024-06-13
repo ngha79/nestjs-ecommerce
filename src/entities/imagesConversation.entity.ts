@@ -6,8 +6,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Messages } from './messages.entity';
-import { Conversation } from './converstion.entity';
+import { Conversation } from './conversation.entity';
+import { MessageConversation } from './message.entity';
 
 @Entity('images_conversation')
 export class ImageConversation {
@@ -17,8 +17,8 @@ export class ImageConversation {
   @Column()
   image: string;
 
-  @ManyToOne(() => Messages, (messages) => messages.images)
-  messages?: Messages;
+  @ManyToOne(() => MessageConversation, (message) => message.images)
+  message?: MessageConversation;
 
   @ManyToOne(() => Conversation, (conversation) => conversation)
   conversation: Conversation;

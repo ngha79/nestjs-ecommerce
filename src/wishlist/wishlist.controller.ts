@@ -11,7 +11,10 @@ import {
 import { Services } from 'src/utils/constants';
 import { WishlistService } from './wishlist.service';
 import { AuthGuard } from 'src/auth/auth.guard';
-import { AddProductToWishListDto } from './dtos/add-product-wishlist.dto';
+import {
+  AddProductsToWishListDto,
+  AddProductToWishListDto,
+} from './dtos/add-product-wishlist.dto';
 import { WishtListProduct } from 'src/entities/wishlist-user.entity';
 import { RemoveProductToWishlistDto } from './dtos/remove-product-wishlist.dto';
 import { DeleteResult } from 'typeorm';
@@ -33,7 +36,18 @@ export class WishlistController {
   ): Promise<WishtListProduct> {
     return this.wishlistService.addProductToWishList({
       ...addProductToWishList,
-      userId: user.userId,
+      id: user.id,
+    });
+  }
+
+  @Post('list')
+  addProductsToWishList(
+    @Body() addProductToWishList: AddProductsToWishListDto,
+    @UserRequest() user: PayloadToken,
+  ): Promise<any> {
+    return this.wishlistService.addProductsToWishList({
+      ...addProductToWishList,
+      id: user.id,
     });
   }
 
@@ -53,7 +67,7 @@ export class WishlistController {
   ): Promise<WishtListProduct> {
     return this.wishlistService.getListWishlist({
       ...getListWishList,
-      userId: user.userId,
+      id: user.id,
     });
   }
 }
