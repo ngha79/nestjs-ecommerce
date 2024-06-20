@@ -12,6 +12,7 @@ import { AuthenticatedSocket } from 'src/utils/interfaces';
 import { IGatewaySessionManager } from './gateway.session';
 import { Services } from 'src/utils/constants';
 import {
+  CreateConversation,
   CreateMessageResponse,
   NotificationResponse,
   UpdateMessageResponse,
@@ -55,6 +56,20 @@ export class MessagingGateWay
     }
   }
 
+  @OnEvent('conversation.user.create')
+  handleConversationUserCreate(payload: CreateConversation) {
+    const { shopId, conversation } = payload;
+    const shop = this.sessions.getUserSocket(shopId);
+    if (shop) shop.emit('newConversation', { conversation });
+  }
+
+  @OnEvent('conversation.shop.create')
+  handleConversationShopCreate(payload: CreateConversation) {
+    const { userId, conversation } = payload;
+    const user = this.sessions.getUserSocket(userId);
+    if (user) user.emit('newConversation', { conversation });
+  }
+
   @OnEvent('message.create')
   handleMessageCreateEvent(payload: CreateMessageResponse) {
     const { shop, user } = payload.message;
@@ -63,6 +78,7 @@ export class MessagingGateWay
       payload.conversation.shop.id === author
         ? payload.conversation.user.id
         : payload.conversation.shop.id;
+
     const recipientSocket = this.sessions.getUserSocket(recipient);
     const authorSocket = this.sessions.getUserSocket(author);
     if (authorSocket) authorSocket.emit('onMessage', payload);

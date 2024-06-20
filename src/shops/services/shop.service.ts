@@ -74,6 +74,26 @@ export class ShopService implements IShopService {
     return shop;
   }
 
+  async findShopByUser(id: string): Promise<Shop> {
+    const shop = await this.shopRepository.findOne({
+      where: {
+        id,
+      },
+      relations: ['followers', 'address'],
+      select: {
+        id: true,
+        userName: true,
+        avatar: true,
+        background: true,
+        createdAt: true,
+        description: true,
+        phoneNumber: true,
+      },
+    });
+    if (!shop) throw new NotFoundException('Shop not found!');
+    return shop;
+  }
+
   async findProfileShopById(id: string): Promise<any> {
     const shop: any = await this.shopRepository
       .createQueryBuilder('shop')
@@ -83,10 +103,10 @@ export class ShopService implements IShopService {
       .leftJoinAndSelect('product.comment', 'comment')
       .select([
         'shop',
-        'COUNT(DISTINCT product.id) AS productCount',
-        'COUNT(DISTINCT followers.id) AS followersCount',
-        'COUNT(DISTINCT likeProduct.id) AS totalLikeCount',
-        'COUNT(comment.id) AS totalCommentCount',
+        'COUNT(DISTINCT product.id) AS productcount',
+        'COUNT(DISTINCT followers.id) AS followerscount',
+        'COUNT(DISTINCT likeProduct.id) AS totallikecount',
+        'COUNT(comment.id) AS totalcommentcount',
       ])
       .where('shop.id = :id', { id })
       .groupBy('shop.id')
@@ -131,34 +151,31 @@ export class ShopService implements IShopService {
 
   async findShop(params: FindShopParams): Promise<any> {
     const {
-      isActive,
       search = '',
       page = '1',
       limit = '20',
       order = 'userName',
     } = params;
-
-    let typeCount = '';
-    if (order === 'followers') typeCount = 'followersCount';
+    let typeOrder = '';
+    if (order === 'followers') typeOrder = 'followerscount';
+    else typeOrder = `shop.${order}`;
     const take = parseInt(limit);
     const takePage = parseInt(page) - 1;
     const skip = take * takePage;
     const [res, total] = await this.shopRepository
       .createQueryBuilder('shop')
       .leftJoinAndSelect('shop.followers', 'followers')
-      .select(['shop', ' COUNT(followers.id) as followersCount'])
       .where('shop.userName LIKE :query', { query: `%${search}%` })
-      .andWhere('shop.isActive = :status', { status: isActive || undefined })
       .orWhere('shop.email LIKE :query', { query: `%${search}%` })
+      .select(['shop', ' COUNT(followers.id) as followerscount'])
       .groupBy('shop.id')
-      .orderBy(typeCount || order, 'ASC')
+      .orderBy(typeOrder, 'ASC')
       .skip(skip)
       .limit(take)
       .getManyAndCount();
     const lastPage = Math.floor(total / take);
     const nextPage = takePage + 1 > lastPage ? null : takePage + 1;
     const prevPage = takePage - 1 < 1 ? null : takePage - 1;
-
     return {
       data: res,
       lastPage,
@@ -176,10 +193,10 @@ export class ShopService implements IShopService {
       .leftJoinAndSelect('product.comment', 'comment')
       .select([
         'shop',
-        'COUNT(DISTINCT product.id) AS productCount',
-        'COUNT(DISTINCT followers.id) AS followersCount',
-        'COUNT(DISTINCT likeProduct.id) AS totalLikeCount',
-        'COUNT(comment.id) AS totalCommentCount',
+        'COUNT(DISTINCT product.id) AS productcount',
+        'COUNT(DISTINCT followers.id) AS followerscount',
+        'COUNT(DISTINCT likeProduct.id) AS totallikecount',
+        'COUNT(comment.id) AS totalcommentcount',
       ])
       .where('product.id = :productId', { productId: productId })
       .groupBy('shop.id')
@@ -255,8 +272,8 @@ export class ShopService implements IShopService {
   }
 
   async getShopSalesInMonth(shopId: string) {
-    const month = 5;
-    const year = 2024;
+    const month = new Date().getMonth() + 1;
+    const year = new Date().getFullYear();
 
     const query = `
     SELECT
@@ -267,18 +284,18 @@ export class ShopService implements IShopService {
     FROM
         shop s
     LEFT JOIN
-        list_order lo ON s.id = lo.shopId
+        list_order lo ON s.id = lo."shopId"
     LEFT JOIN
-        \`order\` o ON lo.id = o.listOrderId
+        "order" o ON lo.id = o."listOrderId"
     LEFT JOIN
-        product p ON o.productId = p.id
+        product p ON o."productId" = p.id
     LEFT JOIN
-        user u ON lo.id = u.id
+        "user" u ON lo.id = u.id
     WHERE
-        s.id = ?
-        AND EXTRACT(MONTH FROM lo.createdAt) = ?
-        AND EXTRACT(YEAR FROM lo.createdAt) = ?
-`;
+        s.id = $1
+        AND EXTRACT(MONTH FROM lo."createdAt") = $2
+        AND EXTRACT(YEAR FROM lo."createdAt") = $3
+    `;
 
     const result = await this.dataSource.query(query, [shopId, month, year]);
     return result[0];

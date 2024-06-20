@@ -9,8 +9,6 @@ export class CreateShopAdminDto {
 
   phoneNumber: string;
 
-  address: string;
-
   avatar: string;
 
   background: string;

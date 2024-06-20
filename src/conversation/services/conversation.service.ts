@@ -281,21 +281,23 @@ export class ConversationService {
   async createMessage(createMessage: CreateMessage) {
     const { content, urls, conversationId, shop, user } = createMessage;
     const conversation = await this.findOne(conversationId);
-    if (!conversation) throw new NotFoundException();
+    if (!conversation) {
+      throw new NotFoundException();
+    }
+
     const message = await this.messageRepo.save({
       content,
       conversation,
       shop,
       user,
     });
+
     if (urls?.length) {
-      const newImage = urls?.map((url) => {
-        const newImage = new ImageMessage();
-        newImage.url = url;
-        newImage.messageConversation = message;
-        return newImage;
-      });
-      await this.imageMessageRepo.save(newImage);
+      const imageMessages = urls.map((url) => ({
+        url,
+        messageConversation: message,
+      }));
+      await this.imageMessageRepo.save(imageMessages);
     }
     return { message, conversation };
   }
@@ -314,9 +316,17 @@ export class ConversationService {
     });
   }
 
-  async findMessageByUser(id: number, userId: string) {
+  async findMessageByUser({
+    id,
+    userId,
+    shopId,
+  }: {
+    id: number;
+    userId?: string;
+    shopId?: string;
+  }) {
     return await this.messageRepo.findOne({
-      where: { id, user: { id: userId } },
+      where: { id, user: { id: userId }, shop: { id: shopId } },
       relations: [
         'user',
         'shop',
@@ -370,8 +380,16 @@ export class ConversationService {
     });
   }
 
-  async deleteMessage(id: number, userId: string) {
-    const message = await this.findMessageByUser(id, userId);
+  async deleteMessage({
+    id,
+    userId,
+    shopId,
+  }: {
+    id: number;
+    userId?: string;
+    shopId?: string;
+  }) {
+    const message = await this.findMessageByUser({ id, userId, shopId });
     if (!message) throw new UnauthorizedException();
     return await this.messageRepo.save({ ...message, deletedAt: new Date() });
   }
@@ -449,7 +467,9 @@ export class ConversationService {
     const checkMessage = await this.findMessageById(createReply.messageId);
     if (!checkMessage) throw new NotFoundException('Message not found!');
     const { message, conversation } = await this.createMessage(createReply);
-    const replyMessage = await this.replyMessageRepo.save({ message });
+    const replyMessage = await this.replyMessageRepo.save({
+      message: checkMessage,
+    });
     const newMessage = await this.messageRepo.save({
       ...message,
       replyMessage,

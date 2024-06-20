@@ -27,9 +27,39 @@ export class ConversationController {
     private readonly conversationService: ConversationService,
   ) {}
 
-  @Post()
-  create(@Body() createConversationDto: CreateConversationDto) {
-    return this.conversationService.create(createConversationDto);
+  @Post('user')
+  @UseGuards(AuthGuard)
+  async createByUser(
+    @Body() createConversationDto: CreateConversationDto,
+    @UserRequest() user: PayloadToken,
+  ) {
+    const conversation = await this.conversationService.create({
+      ...createConversationDto,
+      id: user.id,
+    });
+    this.eventEmitter.emit('conversation.user.create', {
+      conversation,
+      shopId: createConversationDto.shopId,
+    });
+
+    return conversation;
+  }
+
+  @Post('shop')
+  @UseGuards(ShopGuard)
+  async createByShop(
+    @Body() createConversationDto: CreateConversationDto,
+    @UserRequest() user: PayloadToken,
+  ) {
+    const conversation = await this.conversationService.create({
+      ...createConversationDto,
+      shopId: user.id,
+    });
+    this.eventEmitter.emit('conversation.shop.create', {
+      conversation,
+      shopId: createConversationDto.shopId,
+    });
+    return conversation;
   }
 
   @Get('messages-all')
@@ -198,7 +228,10 @@ export class ConversationController {
     @Param('conversationId') conversationId: string,
     @UserRequest() user: PayloadToken,
   ) {
-    const message = await this.conversationService.deleteMessage(id, user.id);
+    const message = await this.conversationService.deleteMessage({
+      id,
+      userId: user.id,
+    });
     const conversation = await this.conversationService.getConversation(
       conversationId,
     );
@@ -209,13 +242,16 @@ export class ConversationController {
   }
 
   @Delete('message-shop/:conversationId/:id')
-  @UseGuards(AuthGuard)
+  @UseGuards(ShopGuard)
   async deleteMessageShop(
     @Param('id') id: number,
     @Param('conversationId') conversationId: string,
     @UserRequest() user: PayloadToken,
   ) {
-    const message = await this.conversationService.deleteMessage(id, user.id);
+    const message = await this.conversationService.deleteMessage({
+      id,
+      shopId: user.id,
+    });
     const conversation = await this.conversationService.getConversation(
       conversationId,
     );

@@ -96,17 +96,12 @@ export class ShopController {
     const newShop = await this.shopService.saveShop({
       ...checkShop,
     });
-    const addressData = JSON.parse(createShopAdmin.address);
-    await this.addressShopService.createAddressShop({
-      ...addressData,
-      shop: newShop,
-    });
     return newShop;
   }
 
   @Get(':id')
   findShopById(@Param('id') id: string): Promise<Shop> {
-    return this.shopService.findShopById(id);
+    return this.shopService.findShopByUser(id);
   }
 
   @Get('profile/me')
@@ -164,13 +159,7 @@ export class ShopController {
       );
       update.background = background.secure_url;
     }
-    const address = JSON.parse(update.addressUpdate as string);
-    if (address) {
-      await this.addressShopService.createAddressShop({
-        ...address,
-        shop: shopInfo,
-      });
-    }
+
     return this.shopService.updateShop(shopInfo, update);
   }
 

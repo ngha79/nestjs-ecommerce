@@ -66,3 +66,9 @@ export type NotificationResponse = {
   userId: string;
   shopId: string;
 };
+
+export type CreateConversation = {
+  conversation: Conversation;
+  userId?: string;
+  shopId?: string;
+};

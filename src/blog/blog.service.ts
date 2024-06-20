@@ -62,9 +62,9 @@ export class BlogService implements IBlogService {
       .createQueryBuilder('topicBlog')
       .leftJoinAndSelect('topicBlog.blog', 'blog')
       .select('topicBlog.topic', 'topic')
-      .addSelect('topicBlog.id', 'id')
+      .addSelect('MAX(topicBlog.id)', 'id') // Sử dụng MAX hoặc hàm tổng hợp khác
       .addSelect('COUNT(blog.id)', 'blogCount')
-      .groupBy('topicBlog.topic')
+      .groupBy('topicBlog.topic') // Chỉ nhóm theo 'topicBlog.topic'
       .getRawMany();
     return topicsWithBlogCount;
   }

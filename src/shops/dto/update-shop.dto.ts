@@ -1,5 +1,3 @@
-import { AddressShop } from 'src/entities/address-shop.entity';
-
 export interface UpdateShopDto {
   userName?: string;
 
@@ -10,8 +8,4 @@ export interface UpdateShopDto {
   avatar?: string;
 
   background?: string;
-
-  addressUpdate?: string;
-
-  address?: AddressShop;
 }

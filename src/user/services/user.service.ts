@@ -167,7 +167,7 @@ export class UserService implements IUserService {
         'user.avatar',
         'user.background',
         'user.createdAt',
-        'COUNT(comment.id) AS totalCommentCount',
+        'COUNT(comment.id) AS totalcommentcount',
         'COUNT(following.id) AS followingCount',
       ])
       .where('user.id = :id', { id })
@@ -185,10 +185,10 @@ export class UserService implements IUserService {
       .leftJoinAndSelect('product.comment', 'comment')
       .select([
         'shop',
-        'COUNT(product.id) AS productCount',
-        'COUNT(followers.id) AS followersCount',
-        'COUNT(likeProduct.id) AS totalLikeCount',
-        'COUNT(comment.id) AS totalCommentCount',
+        'COUNT(product.id) AS productcount',
+        'COUNT(followers.id) AS followerscount',
+        'COUNT(likeProduct.id) AS totallikecount',
+        'COUNT(comment.id) AS totalcommentcount',
       ])
       .where('product.id = :id', { id: productId })
       .groupBy('shop.id')

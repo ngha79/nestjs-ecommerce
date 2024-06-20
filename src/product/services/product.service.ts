@@ -11,7 +11,6 @@ import {
   DeleteResult,
   In,
   Like,
-  Not,
   Repository,
   UpdateResult,
 } from 'typeorm';
@@ -259,17 +258,8 @@ export class ProductService implements IProductService {
   }
 
   async allProduct(productSearch: SearchProduct): Promise<any> {
-    const {
-      page,
-      limit,
-      search,
-      shopId,
-      publish,
-      brand,
-      order,
-      searchBy,
-      ids,
-    } = productSearch;
+    const { page, limit, search, shopId, publish, brand, order, searchBy } =
+      productSearch;
     const take = parseInt(limit);
     const takePage = parseInt(page);
     const skip = take * (takePage - 1);
@@ -284,7 +274,6 @@ export class ProductService implements IProductService {
       orderBy['price'] = order;
     }
     const nameSearch = slugify(search, { lower: true });
-    const listIds = ids?.split(',') || [];
     const [res, total] = await this.productRepository.findAndCount({
       where: [
         {
@@ -292,7 +281,6 @@ export class ProductService implements IProductService {
           isPublish: publish ? false : true,
           shop: { id: shopId },
           brand,
-          id: listIds?.length > 0 ? Not(In([listIds])) : undefined,
         },
       ],
       relations: ['attributes', 'attributes.inventory', 'picture'],
